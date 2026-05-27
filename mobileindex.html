@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026–27 Tournament List — Virginia Valor FC</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #a67c00;
+    --gold-dim: #a67c0066;
+    --gold-bg: rgba(166,124,0,0.07);
+    --bg: #f5f5f5;
+    --bg2: #ffffff;
+    --bg3: #f0f0f0;
+    --border: #e0e0e0;
+    --text: #111111;
+    --muted: #444444;
+    --muted2: #888888;
+    --green: #166534;
+    --yellow: #92400e;
+    --red: #991b1b;
+    --blue: #1d4ed8;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 32px 22px;
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .header-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .header-eyebrow span:first-child {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--gold);
+  }
+  .header-eyebrow .dot { color: var(--muted2); font-size: 11px; }
+  .header-eyebrow .season {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 34px;
+    letter-spacing: 0.06em;
+    color: #111;
+    line-height: 1;
+  }
+  .stats {
+    display: flex;
+    gap: 24px;
+  }
+  .stat { text-align: center; }
+  .stat-val {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--gold);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ── MONTH TABS ── */
+  .tabs-wrap {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tabs {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    padding: 0 32px;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--muted2);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.14em;
+    padding: 14px 16px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.15s, border-color 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tab-btn:hover { color: var(--muted); }
+  .tab-btn.active {
+    color: var(--gold);
+    border-bottom-color: var(--gold);
+  }
+  .tab-count {
+    font-size: 10px;
+    background: #e8e8e8;
+    color: var(--muted2);
+    border-radius: 10px;
+    padding: 1px 6px;
+    font-family: 'Barlow', sans-serif;
+    font-weight: 700;
+    transition: all 0.15s;
+  }
+  .tab-btn.active .tab-count {
+    background: var(--gold-bg);
+    color: var(--gold);
+  }
+
+  /* ── CONTENT AREA ── */
+  .content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 32px 60px;
+  }
+
+  /* ── MONTH HEADER ── */
+  .month-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .month-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 0.08em;
+    color: #111;
+  }
+  .month-deadline {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 4px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .month-deadline strong { color: var(--gold); }
+  .deadline-icon { color: var(--gold-dim); }
+
+  /* ── FILTERS ── */
+  .filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .search-input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--text);
+    padding: 5px 10px;
+    font-size: 12.5px;
+    font-family: 'Barlow', sans-serif;
+    outline: none;
+    width: 150px;
+    transition: border-color 0.15s;
+  }
+  .search-input:focus { border-color: var(--gold-dim); }
+  .search-input::placeholder { color: var(--muted2); }
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--muted2);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Barlow', sans-serif;
+    letter-spacing: 0.03em;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { color: var(--muted); border-color: #ccc; }
+  .filter-btn.active-all { background: #e8e8e8; border-color: #ccc; color: var(--text); }
+  .filter-btn.active-recommended { background: rgba(22,101,52,0.08); border-color: rgba(22,101,52,0.3); color: var(--green); }
+  .filter-btn.active-be-aware { background: rgba(146,64,14,0.08); border-color: rgba(146,64,14,0.3); color: var(--yellow); }
+  .filter-btn.active-club-event { background: rgba(29,78,216,0.08); border-color: rgba(29,78,216,0.3); color: var(--blue); }
+  .filter-btn.active-not-recommended { background: rgba(153,27,27,0.08); border-color: rgba(153,27,27,0.3); color: var(--red); }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead tr {
+    background: #1a1a1a;
+  }
+  th {
+    padding: 9px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    color: #e5e7eb;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  tbody tr.data-row {
+    border-top: 1px solid #ebebeb;
+    transition: background 0.12s;
+    cursor: default;
+  }
+  tbody tr.data-row:first-child { border-top: none; }
+  tbody tr.data-row.has-notes { cursor: pointer; }
+  tbody tr.data-row:hover { background: var(--gold-bg); }
+  tbody tr.data-row.even { background: rgba(0,0,0,0.02); }
+  tbody tr.data-row.even:hover { background: var(--gold-bg); }
+
+  td {
+    padding: 9px 14px;
+    vertical-align: middle;
+  }
+  .td-date {
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    min-width: 90px;
+  }
+  .td-name {
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .expand-arrow {
+    font-size: 9px;
+    color: var(--gold);
+    opacity: 0.5;
+    transition: opacity 0.15s, transform 0.2s;
+    flex-shrink: 0;
+  }
+  .expand-arrow.open { opacity: 1; transform: rotate(180deg); }
+  .td-location {
+    color: var(--muted);
+    font-size: 12.5px;
+    min-width: 140px;
+  }
+  .td-levels { min-width: 160px; }
+  .levels-wrap { display: flex; flex-wrap: wrap; gap: 3px; }
+
+  /* Level badges */
+  .level-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .level-ecnl { background: #a67c00; color: #fff; }
+  .level-gold { background: #d4a017; color: #fff; }
+  .level-white { background: #fff; color: #111; border: 1px solid #ccc; }
+  .level-black { background: #1f2937; color: #fff; }
+  .level-silver { background: #6b7280; color: #fff; }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+  .status-recommended { background: rgba(22,101,52,0.08); color: var(--green); border: 1px solid rgba(22,101,52,0.25); }
+  .status-not-recommended { background: rgba(153,27,27,0.08); color: var(--red); border: 1px solid rgba(153,27,27,0.25); }
+  .status-be-aware { background: rgba(146,64,14,0.08); color: var(--yellow); border: 1px solid rgba(146,64,14,0.25); }
+  .status-club-event { background: rgba(29,78,216,0.08); color: var(--blue); border: 1px solid rgba(29,78,216,0.25); }
+  .status-neutral { color: var(--muted2); font-size: 13px; }
+
+  /* Notes row */
+  tr.notes-row td {
+    padding: 0 14px 10px 14px;
+    background: rgba(166,124,0,0.04);
+    border-top: none;
+  }
+  tr.notes-row.hidden { display: none; }
+  .notes-content {
+    font-size: 12.5px;
+    color: #333;
+    border-left: 2px solid var(--gold);
+    padding-left: 12px;
+    line-height: 1.6;
+  }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    color: var(--muted2);
+    padding: 40px;
+    font-size: 13px;
+  }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .legend-label { font-size: 11px; color: var(--muted2); }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+  }
+  .legend-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-hint {
+    font-size: 11px;
+    color: var(--muted2);
+    margin-left: 6px;
+  }
+
+  /* ── MOBILE CARDS ── */
+  .card-list { display: none; flex-direction: column; gap: 10px; }
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: default;
+    transition: box-shadow 0.15s;
+  }
+  .card.has-notes { cursor: pointer; }
+  .card:active { box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+  .card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+  .card-name {
+    font-weight: 700;
+    font-size: 14px;
+    color: #111;
+    line-height: 1.3;
+    flex: 1;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+  }
+  .card-date {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .card-location {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .card-notes {
+    display: none;
+    margin-top: 10px;
+    font-size: 12.5px;
+    color: #333;
+    border-left: 2px solid var(--gold);
+    padding-left: 10px;
+    line-height: 1.6;
+  }
+  .card-notes.open { display: block; }
+  .card-arrow {
+    font-size: 10px;
+    color: var(--gold);
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .card-arrow.open { transform: rotate(180deg); }
+
+  /* Responsive */
+  @media (max-width: 700px) {
+    .header { padding: 20px 16px 16px; }
+    .content { padding: 16px 16px 48px; }
+    .tabs { padding: 0 12px; }
+    .tab-btn { padding: 12px 12px 10px; font-size: 13px; }
+    h1 { font-size: 24px; }
+    .header-inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .stats { gap: 20px; }
+    .stat-val { font-size: 22px; }
+    .month-header { flex-direction: column; align-items: flex-start; }
+    .filters {
+      width: 100%;
+      gap: 6px;
+    }
+    .search-input { width: 100%; }
+    .filter-btn { font-size: 10.5px; padding: 5px 8px; }
+    /* Hide table, show cards */
+    .table-wrap { display: none; }
+    .card-list { display: flex; }
+    .legend { gap: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div>
+      <div class="header-eyebrow">
+        <span>Virginia Valor FC</span>
+        <span class="dot">·</span>
+        <span class="season">2026–27 SEASON</span>
+      </div>
+      <h1>Recommended Tournament List</h1>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="stat-val" id="total-count">—</div><div class="stat-label">Total Events</div></div>
+      <div class="stat"><div class="stat-val" id="rec-count">—</div><div class="stat-label">Recommended</div></div>
+      <div class="stat"><div class="stat-val" id="month-count">9</div><div class="stat-label">Months</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="tabs-wrap">
+  <div class="tabs" id="tabs"></div>
+</div>
+
+<div class="content">
+  <div class="month-header">
+    <div>
+      <div class="month-title" id="month-title"></div>
+      <div class="month-deadline" id="month-deadline"></div>
+    </div>
+    <div class="filters">
+      <input class="search-input" id="search" type="text" placeholder="Search tournaments…" oninput="applyFilters()">
+      <button class="filter-btn active-all" data-filter="all" onclick="setFilter('all')">All</button>
+      <button class="filter-btn" data-filter="recommended" onclick="setFilter('recommended')">✓ Recommended</button>
+      <button class="filter-btn" data-filter="be-aware" onclick="setFilter('be-aware')">⚠ Be Aware</button>
+      <button class="filter-btn" data-filter="club-event" onclick="setFilter('club-event')">★ Club Event</button>
+      <button class="filter-btn" data-filter="not-recommended" onclick="setFilter('not-recommended')">✗ Not Recommended</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Tournament</th>
+          <th>Location</th>
+          <th>Competition Level</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="card-list" id="card-list"></div>
+
+  <div class="legend">
+    <span class="legend-label">Legend:</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#166534"></span><span style="color:#166534">Recommended</span></span>
+    <span class="legend-item"><span class="legend-dot" style="background:#92400e"></span><span style="color:#92400e">Be Aware</span></span>
+    <span class="legend-item"><span class="legend-dot" style="background:#991b1b"></span><span style="color:#991b1b">Not Recommended</span></span>
+    <span class="legend-item"><span class="legend-dot" style="background:#1d4ed8"></span><span style="color:#1d4ed8">Club Event</span></span>
+    <span class="legend-hint">· Click any row with ▼ to expand notes</span>
+  </div>
+</div>
+
+<script>
+const MONTHS = [
+  {
+    label: "August 2026", short: "AUG", deadline: "July 1",
+    tournaments: [
+      { date: "Aug 8–9", name: "FSCI August Friendlies", location: "Fredericksburg", levels: ["Gold","White","Black","Silver"], status: "not-recommended", notes: "Very early in the year — full team may not be available due to vacations. Trouble getting full brackets. Usually combined age groups." },
+      { date: "Aug 21–23", name: "Loudoun Premier Cup", location: "Loudoun (Local)", levels: ["ECNL-RL","Gold","White"], status: "recommended", notes: "Well run, local. May end up playing same teams in ECNL-RL league play." },
+      { date: "Aug 29–30", name: "Gettysburg Battlefield Blast", location: "Gettysburg, PA", levels: ["Gold","White","Black","Silver"], status: "neutral", notes: "" },
+    ]
+  },
+  {
+    label: "September 2026", short: "SEP", deadline: "July 1",
+    tournaments: [
+      { date: "Aug 31–Sep 1", name: "Blue Ridge Cup", location: "Charlottesville, VA", levels: ["Gold","White","Black"], status: "neutral", notes: "" },
+      { date: "Sep 4–6", name: "Virginia Cup", location: "Richmond / Williamsburg", levels: ["ECNL-RL","Gold","White"], status: "recommended", notes: "Well run tournament." },
+      { date: "Sep 5–7", name: "OBGC Capital Cup", location: "Olney, MD", levels: ["ECNL-RL","Gold","White"], status: "be-aware", notes: "Fields not the best." },
+      { date: "Sep 5–6", name: "FSCI Labor Day", location: "Fredericksburg", levels: ["Gold","White","Black","Silver"], status: "be-aware", notes: "Hit and miss on quality and number of teams in a bracket. Sometimes combines age groups." },
+    ]
+  },
+  {
+    label: "October 2026", short: "OCT", deadline: "July 1",
+    tournaments: [
+      { date: "Oct 10–12", name: "WAGS (Girls Only)", location: "Local (Fredericksburg)", levels: ["ECNL-RL","Gold"], status: "recommended", notes: "U16–19 games in Fredericksburg; younger teams local." },
+      { date: "Oct 9–11", name: "Williamsburg Columbus Day Invitational", location: "Williamsburg, VA", levels: ["ECNL-RL","Gold","White","Black"], status: "club-event", notes: "Talk with DOCs." },
+      { date: "Oct 10–11", name: "VA Beach Columbus Day", location: "Virginia Beach", levels: ["Gold","White"], status: "neutral", notes: "" },
+      { date: "Oct 10–11", name: "NVSC Battlefield Cup", location: "Local", levels: ["White","Black","Silver"], status: "neutral", notes: "" },
+      { date: "Oct 10–11", name: "Heritage Cup", location: "Alexandria", levels: ["White","Black","Silver"], status: "neutral", notes: "" },
+      { date: "Oct 10–11", name: "SAC Columbus Day", location: "Columbia, MD", levels: ["ECNL-RL","Gold","White"], status: "neutral", notes: "Good for Boys teams." },
+      { date: "Oct 31–Nov 1", name: "Pre-ECNL", location: "Rivercity, Richmond", levels: ["ECNL-RL"], status: "recommended", notes: "U10–12 only." },
+    ]
+  },
+  {
+    label: "November 2026", short: "NOV", deadline: "September 15",
+    tournaments: [
+      { date: "Nov 7–8", name: "NCFC JNR Girls (u9–14)", location: "Raleigh-Wilson, NC", levels: ["ECNL-RL","Gold"], status: "be-aware", notes: "Fields very spread out, especially with multiple teams. Hotel could be far from fields." },
+      { date: "Nov 7–8", name: "Bethesda Premier Cup Youth", location: "Bethesda, MD", levels: ["ECNL-RL","Gold"], status: "be-aware", notes: "U9–U13. 30 or 25 min halves. Constant weather issues." },
+      { date: "Nov 13–15", name: "Girls ECNL-RL Showcase", location: "Richmond", levels: ["ECNL-RL"], status: "neutral", notes: "U17–19 only." },
+      { date: "Nov 14–15", name: "NCFC JNR Boys (u9–14)", location: "Raleigh-Wilson, NC", levels: ["ECNL-RL","Gold"], status: "be-aware", notes: "Fields very spread out, especially with multiple teams. Hotel could be far from fields." },
+      { date: "Nov 15–17", name: "Bethesda Premier Cup (Girls)", location: "MD Soccerplex", levels: ["ECNL-RL","Gold"], status: "be-aware", notes: "30 or 25 min halves. Constant weather issues." },
+      { date: "Nov 16–17", name: "Nations Capital Cup (Girls)", location: "McLean, VA", levels: ["Gold","White"], status: "neutral", notes: "" },
+      { date: "Nov 16–17", name: "Capital Fall Classic — Girls Weekend", location: "Richmond", levels: ["ECNL-RL","Gold","White"], status: "recommended", notes: "" },
+      { date: "Nov 20–22", name: "NCFC Girls Showcase", location: "Raleigh-Wilson, NC", levels: ["ECNL-RL","Gold"], status: "be-aware", notes: "Weather issues — be prepared for schedule changes. Fields very spread out." },
+      { date: "Nov 20–22", name: "Boys ECNL-RL Showcase", location: "Tucson, AZ", levels: ["ECNL-RL"], status: "recommended", notes: "U15–U16 only." },
+      { date: "Nov 20–22", name: "Boys ECNL-RL Showcase", location: "Rivercity, Richmond", levels: ["ECNL-RL"], status: "recommended", notes: "U17–U18 only." },
+      { date: "TBA", name: "Girls ECNL-RL Showcase", location: "Tucson, AZ", levels: ["ECNL-RL"], status: "recommended", notes: "U15–U16 only." },
+      { date: "Nov 21–22", name: "Champions Shootout", location: "Williamsburg, VA", levels: ["Gold","White"], status: "neutral", notes: "" },
+      { date: "Nov 21–23", name: "Bethesda Premier Cup (Boys)", location: "MD Soccerplex", levels: ["ECNL-RL","Gold"], status: "be-aware", notes: "30 or 25 min halves. Constant weather issues." },
+      { date: "Nov 21–22", name: "Capital Fall Classic — Boys Weekend", location: "Richmond, VA", levels: ["ECNL-RL","Gold","White"], status: "recommended", notes: "" },
+      { date: "Nov 21–22", name: "Hunt Country Classic", location: "Local", levels: ["White","Black","Silver"], status: "recommended", notes: "" },
+      { date: "Nov 21–22", name: "Nations Capital Cup (Boys)", location: "McLean, VA", levels: ["Gold","White","Black"], status: "neutral", notes: "" },
+    ]
+  },
+  {
+    label: "December 2026", short: "DEC", deadline: "September 15",
+    tournaments: [
+      { date: "Dec 4–6", name: "Junior Winter Cup", location: "Sarasota, FL", levels: ["Gold","White"], status: "neutral", notes: "" },
+      { date: "Dec 5–6", name: "Atlantic Cup", location: "Hampton Roads, VA", levels: ["Gold","White"], status: "be-aware", notes: "The housing company this tournament uses is not good. Has refused to refund families when tournament was cancelled due to weather." },
+      { date: "Dec 5–6", name: "RVA Turf Wars", location: "Rivercity, Richmond", levels: ["Gold","White"], status: "neutral", notes: "" },
+      { date: "Dec 5–6", name: "District Cup", location: "DC / NOVA", levels: ["Gold","White"], status: "neutral", notes: "U9–14 only." },
+      { date: "Dec 11–13", name: "NCFC Boys Showcase (u15–19)", location: "Raleigh-Wilson, NC", levels: ["ECNL-RL","Gold"], status: "be-aware", notes: "Weather issues — be prepared for schedule changes. Fields very spread out." },
+      { date: "Dec 12–13", name: "Capital Futsal Cup", location: "Alexandria", levels: ["Gold","White"], status: "neutral", notes: "" },
+      { date: "Dec 11–13", name: "CCL College Showcase", location: "Rivercity, Richmond", levels: ["ECNL-RL","Gold"], status: "neutral", notes: "" },
+      { date: "Dec 27–29", name: "Disney Junior Showcase", location: "Orlando, FL", levels: ["ECNL-RL"], status: "recommended", notes: "Expensive — get commitment from families early. Falls between Christmas and New Year's." },
+    ]
+  },
+  {
+    label: "January 2027", short: "JAN", deadline: "December 1",
+    tournaments: [
+      { date: "Jan 1–3", name: "Boys ECNL-RL Showcase", location: "Sanford, FL", levels: ["ECNL-RL"], status: "recommended", notes: "U17–U18 only." },
+      { date: "Jan 8–10", name: "Girls ECNL-RL Showcase", location: "Sanford, FL", levels: ["ECNL-RL"], status: "recommended", notes: "U17–U18 only." },
+      { date: "Jan 15–18", name: "Disney Showcase Girls", location: "Orlando, FL", levels: ["ECNL-RL","Gold"], status: "recommended", notes: "Expensive — but a great experience for teams." },
+      { date: "Jan 22–24", name: "NL National Showcase", location: "Rivercity, Richmond", levels: ["ECNL-RL","Gold"], status: "neutral", notes: "" },
+    ]
+  },
+  {
+    label: "February 2027", short: "FEB", deadline: "December 1",
+    tournaments: [
+      { date: "Feb 1–2", name: "USYS-EDP Adidas College Showcase", location: "Rivercity, Richmond", levels: ["ECNL-RL"], status: "recommended", notes: "Well run event. East coast teams." },
+      { date: "Feb 1–2", name: "Feature Weekend Showcase", location: "Alexandria", levels: ["ECNL-RL","Gold"], status: "neutral", notes: "U15+." },
+      { date: "Feb 5–7", name: "DelSol Desert Classic", location: "Phoenix, AZ", levels: ["ECNL-RL","Gold","White"], status: "club-event", notes: "U14s Club Event." },
+      { date: "Feb 6–7", name: "VDA Showcase — Girls", location: "Local", levels: ["ECNL-RL"], status: "be-aware", notes: "Only 2 games." },
+      { date: "Feb 12–14", name: "San Antonio Copa", location: "San Antonio, TX", levels: ["ECNL-RL","Gold","White"], status: "club-event", notes: "U14s Club Event." },
+      { date: "Feb 12–14", name: "VA Legacy Presidents Day", location: "Williamsburg", levels: ["Gold","White"], status: "neutral", notes: "" },
+      { date: "Feb 12–14", name: "The Adidas National Cup", location: "Rivercity, Richmond", levels: ["ECNL-RL","Gold"], status: "neutral", notes: "" },
+      { date: "Feb 13–14", name: "VDA Showcase — Boys", location: "Local", levels: ["ECNL-RL"], status: "be-aware", notes: "Only 2 games." },
+      { date: "Feb 13–15", name: "Mayors Cup Boys", location: "Las Vegas, NV", levels: ["ECNL-RL","Gold"], status: "recommended", notes: "4 games but 30 min halves. Takes a lot of planning — great experience for teams." },
+      { date: "TBA", name: "Girls ECNL-RL Showcase", location: "Dallas, TX", levels: ["ECNL-RL"], status: "recommended", notes: "U16–19." },
+      { date: "TBA", name: "Girls ECNL-RL Showcase", location: "Bradenton, FL", levels: ["ECNL-RL"], status: "recommended", notes: "U15–19." },
+      { date: "Feb 19–21", name: "Mayors Cup Girls", location: "Las Vegas, NV", levels: ["ECNL-RL","Gold"], status: "recommended", notes: "4 games but 30 min halves. Takes a lot of planning — great experience for teams." },
+      { date: "Feb 20–21", name: "Ultimate Cup", location: "Richmond", levels: ["ECNL-RL","Gold","White","Black"], status: "neutral", notes: "" },
+      { date: "Feb 20–21", name: "Arlington (ASIST) Boys", location: "Arlington, VA", levels: ["Gold","White"], status: "neutral", notes: "U9–U15." },
+      { date: "Feb 27–28", name: "Jefferson Cup JNR Boys (u9–14)", location: "Richmond", levels: ["ECNL-RL"], status: "neutral", notes: "" },
+    ]
+  },
+  {
+    label: "March 2027", short: "MAR", deadline: "December 1",
+    tournaments: [
+      { date: "Mar 5–7", name: "Loudoun Showcase", location: "Loudoun (Local)", levels: ["ECNL-RL","Gold"], status: "recommended", notes: "Recommended — but if not playing at LSP or Evergreen, you will not see college coaches." },
+      { date: "Mar 5–7", name: "Girls ECNL-RL Showcase", location: "Davis, CA", levels: ["ECNL-RL"], status: "neutral", notes: "U15–19." },
+      { date: "Mar 6–7", name: "Jefferson Cup JNR Girls (u9–14)", location: "Richmond", levels: ["ECNL-RL"], status: "neutral", notes: "" },
+      { date: "Mar 12–14", name: "Jefferson Cup Girls Showcase (u15–19)", location: "Richmond", levels: ["ECNL-RL"], status: "neutral", notes: "" },
+      { date: "Mar 12–14", name: "Va Beach Spring Classic", location: "Hampton Roads, VA", levels: ["Gold","White"], status: "recommended", notes: "Well run event. East coast teams." },
+      { date: "Mar 19–21", name: "Jefferson Cup Boys Showcase (u15–19)", location: "Richmond", levels: ["ECNL-RL"], status: "neutral", notes: "" },
+      { date: "TBA", name: "ASK Tournament", location: "Alexandria", levels: ["ECNL-RL","Gold","White","Black"], status: "recommended", notes: "U13+." },
+      { date: "TBA", name: "Arlington (ASIST) Girls", location: "Arlington, VA", levels: ["ECNL-RL","Gold","White","Black"], status: "neutral", notes: "U9–U15." },
+      { date: "TBA", name: "East Coast Spring Shootout", location: "Hampton Roads, VA", levels: ["Gold","White"], status: "be-aware", notes: "The housing company this tournament uses is not good. Has refused to refund families when tournament was cancelled due to weather." },
+      { date: "TBA", name: "Amanda Post Memorial", location: "Columbia, MD", levels: ["ECNL-RL","Gold","White"], status: "neutral", notes: "" },
+      { date: "TBA", name: "McLean Premier Cup (u15–19)", location: "Local", levels: ["ECNL-RL","Gold","White"], status: "neutral", notes: "U15–U19." },
+      { date: "TBA", name: "PWSI Ice Breaker HS (u15–19)", location: "Local", levels: ["Gold","White"], status: "neutral", notes: "OK if your team has no players in HS. Otherwise, be careful — risk of overload and injury." },
+      { date: "TBA", name: "ASK Tournament (u9–12)", location: "Alexandria", levels: ["Gold","White"], status: "neutral", notes: "U9–U12." },
+      { date: "TBA", name: "Baltimore Mania (Boys)", location: "Baltimore", levels: ["ECNL-RL","Gold","White"], status: "neutral", notes: "" },
+      { date: "TBA", name: "McLean Premier Cup (u9–12)", location: "Local", levels: ["ECNL-RL","Gold","White"], status: "neutral", notes: "U9–U12." },
+      { date: "TBA", name: "Stafford Soccer St. Patrick's Day (u15–19)", location: "Local", levels: ["ECNL-RL","Gold","White","Black"], status: "neutral", notes: "Well run local tournament." },
+      { date: "TBA", name: "Baltimore Mania (Girls)", location: "Baltimore", levels: ["ECNL-RL","Gold","White"], status: "neutral", notes: "" },
+      { date: "TBA", name: "PWSI Ice Breaker Younger", location: "Local", levels: ["Gold","White"], status: "be-aware", notes: "U9–U14. Tournament officials not easy to work with. Not flexible on bracket or schedule changes." },
+    ]
+  },
+  {
+    label: "May 2027", short: "MAY", deadline: null,
+    tournaments: [
+      { date: "May 29–31", name: "Girls ECNL-RL Showcase", location: "North Carolina", levels: ["ECNL-RL"], status: "neutral", notes: "U15–17." },
+      { date: "May 29–31", name: "The Virginian", location: "Springfield", levels: ["Gold","White","Black"], status: "be-aware", notes: "Memorial Day tournaments are not recommended by the club." },
+      { date: "May 29–31", name: "Hershey Memorial Day", location: "Hershey, PA", levels: ["Gold","White","Black"], status: "be-aware", notes: "Memorial Day tournaments are not recommended by the club." },
+      { date: "May 29–31", name: "Canon Cup", location: "Local", levels: ["Gold","White","Black"], status: "be-aware", notes: "Memorial Day tournaments are not recommended by the club." },
+    ]
+  },
+];
+
+const STATUS_META = {
+  recommended:     { label: "Recommended",     icon: "✓", cls: "status-recommended" },
+  "not-recommended": { label: "Not Recommended", icon: "✗", cls: "status-not-recommended" },
+  "be-aware":      { label: "Be Aware",        icon: "⚠", cls: "status-be-aware" },
+  "club-event":    { label: "Club Event",      icon: "★", cls: "status-club-event" },
+  neutral:         { label: "—",               icon: "",  cls: "status-neutral" },
+};
+
+const LEVEL_CLS = {
+  "ECNL-RL": "level-ecnl",
+  "Gold":    "level-gold",
+  "White":   "level-white",
+  "Black":   "level-black",
+  "Silver":  "level-silver",
+};
+
+let activeMonth = 0;
+let activeFilter = "all";
+
+function totalCount() {
+  return MONTHS.reduce((a, m) => a + m.tournaments.length, 0);
+}
+function recCount() {
+  return MONTHS.reduce((a, m) => a + m.tournaments.filter(t => t.status === "recommended").length, 0);
+}
+
+function buildTabs() {
+  const el = document.getElementById("tabs");
+  el.innerHTML = MONTHS.map((m, i) => `
+    <button class="tab-btn ${i === 0 ? "active" : ""}" id="tab-${i}" onclick="switchMonth(${i})">
+      ${m.short} <span class="tab-count">${m.tournaments.length}</span>
+    </button>
+  `).join("");
+}
+
+function switchMonth(idx) {
+  activeMonth = idx;
+  activeFilter = "all";
+  document.getElementById("search").value = "";
+  document.querySelectorAll(".tab-btn").forEach((b, i) => b.classList.toggle("active", i === idx));
+  setFilter("all", false);
+  renderMonth();
+}
+
+function setFilter(f, doRender = true) {
+  activeFilter = f;
+  document.querySelectorAll(".filter-btn").forEach(b => {
+    b.className = "filter-btn" + (b.dataset.filter === f ? " active-" + f : "");
+  });
+  if (doRender) applyFilters();
+}
+
+function applyFilters() {
+  renderMonth();
+}
+
+function levelBadge(l) {
+  const cls = LEVEL_CLS[l] || "level-black";
+  return `<span class="level-badge ${cls}">${l}</span>`;
+}
+
+function renderMonth() {
+  const m = MONTHS[activeMonth];
+  document.getElementById("month-title").textContent = m.label;
+
+  const dl = document.getElementById("month-deadline");
+  if (m.deadline) {
+    dl.innerHTML = `<span class="deadline-icon">⏱</span> Registration deadline to Beth Morris: <strong>${m.deadline}</strong>`;
+    dl.style.display = "flex";
+  } else {
+    dl.style.display = "none";
+  }
+
+  const q = (document.getElementById("search").value || "").toLowerCase();
+  const filtered = m.tournaments.filter(t => {
+    const matchStatus = activeFilter === "all" || t.status === activeFilter;
+    const matchSearch = !q || t.name.toLowerCase().includes(q) || t.location.toLowerCase().includes(q);
+    return matchStatus && matchSearch;
+  });
+
+  const tbody = document.getElementById("tbody");
+  const cardList = document.getElementById("card-list");
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" class="empty-state">No tournaments match the current filter.</td></tr>`;
+    cardList.innerHTML = `<div class="empty-state" style="text-align:center;padding:32px;color:#888;">No tournaments match the current filter.</div>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((t, i) => {
+    const sm = STATUS_META[t.status];
+    const hasNotes = !!t.notes;
+    const evenCls = i % 2 === 0 ? " even" : "";
+    const notesCls = hasNotes ? " has-notes" : "";
+    const statusHtml = t.status === "neutral"
+      ? `<span class="status-neutral">—</span>`
+      : `<span class="status-badge ${sm.cls}">${sm.icon} ${sm.label}</span>`;
+    const arrowHtml = hasNotes ? `<span class="expand-arrow" id="arrow-${i}">▼</span>` : "";
+    const clickAttr = hasNotes ? `onclick="toggleNotes(${i})"` : "";
+    return `
+      <tr class="data-row${evenCls}${notesCls}" id="row-${i}" ${clickAttr}>
+        <td class="td-date">${t.date}</td>
+        <td><div class="td-name">${t.name}${arrowHtml}</div></td>
+        <td class="td-location">${t.location}</td>
+        <td class="td-levels"><div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div></td>
+        <td>${statusHtml}</td>
+      </tr>
+      ${hasNotes ? `<tr class="notes-row hidden" id="note-${i}"><td colspan="5"><div class="notes-content">${t.notes}</div></td></tr>` : ""}
+    `;
+  }).join("");
+
+  cardList.innerHTML = filtered.map((t, i) => {
+    const sm = STATUS_META[t.status];
+    const hasNotes = !!t.notes;
+    const notesCls = hasNotes ? " has-notes" : "";
+    const statusHtml = t.status === "neutral"
+      ? `<span class="status-neutral" style="font-size:12px;">—</span>`
+      : `<span class="status-badge ${sm.cls}">${sm.icon} ${sm.label}</span>`;
+    const clickAttr = hasNotes ? `onclick="toggleCard(${i})"` : "";
+    return `
+      <div class="card${notesCls}" id="card-${i}" ${clickAttr}>
+        <div class="card-top">
+          <div class="card-name">${t.name}</div>
+          ${hasNotes ? `<span class="card-arrow" id="carrow-${i}">▼</span>` : ""}
+        </div>
+        <div class="card-meta">
+          <span class="card-date">${t.date}</span>
+          <span style="color:#ccc;font-size:11px;">·</span>
+          <span class="card-location">${t.location}</span>
+        </div>
+        <div class="card-bottom">
+          <div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div>
+          ${statusHtml}
+        </div>
+        ${hasNotes ? `<div class="card-notes" id="cnote-${i}">${t.notes}</div>` : ""}
+      </div>
+    `;
+  }).join("");
+}
+
+function toggleNotes(i) {
+  const noteRow = document.getElementById("note-" + i);
+  const arrow = document.getElementById("arrow-" + i);
+  if (!noteRow) return;
+  const isHidden = noteRow.classList.contains("hidden");
+  noteRow.classList.toggle("hidden", !isHidden);
+  if (arrow) arrow.classList.toggle("open", isHidden);
+}
+
+function toggleCard(i) {
+  const notes = document.getElementById("cnote-" + i);
+  const arrow = document.getElementById("carrow-" + i);
+  if (!notes) return;
+  notes.classList.toggle("open");
+  if (arrow) arrow.classList.toggle("open");
+}
+
+// Init
+document.getElementById("total-count").textContent = totalCount();
+document.getElementById("rec-count").textContent = recCount();
+buildTabs();
+renderMonth();
+</script>
+</body>
+</html>
