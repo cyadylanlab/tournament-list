@@ -176,7 +176,7 @@
     .filters { width: 100%; gap: 6px; }
     .search-input { width: 100%; }
     .filter-btn { font-size: 10.5px; padding: 5px 8px; }
-    .td-deadline, th:nth-child(5) { display: none; }
+    .td-location, th:nth-child(4) { display: none; }
     .table-wrap { display: none; }
     .card-list { display: flex; }
     .legend { gap: 12px; }
@@ -222,7 +222,7 @@
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Date</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Deadline</th><th>Considerations</th></tr></thead>
+      <thead><tr><th>Date</th><th>Deadline</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Considerations</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
@@ -484,10 +484,10 @@ function renderMonth() {
     return `
       <tr class="data-row${evenCls}${notesCls}" ${clickAttr}>
         <td class="td-date">${t.date}</td>
+        <td class="td-deadline">${(t.deadline||m.deadline) ? `<span class="deadline-badge">${t.deadline||m.deadline}</span>` : '<span style="color:#ccc">—</span>'}</td>
         <td><div class="td-name">${t.name}${arrowHtml}</div></td>
         <td class="td-location">${t.location}</td>
         <td class="td-levels"><div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div></td>
-        <td class="td-deadline">${(t.deadline||m.deadline) ? `<span class="deadline-badge">${t.deadline||m.deadline}</span>` : '<span style="color:#ccc">—</span>'}</td>
         <td>${statusHtml}${detailsHint}</td>
       </tr>
       ${hasNotes ? `<tr class="notes-row hidden" id="note-${i}"><td colspan="5"><div class="notes-content">${t.notes}</div></td></tr>` : ""}`;
