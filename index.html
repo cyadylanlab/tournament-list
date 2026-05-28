@@ -119,6 +119,18 @@
   .legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .legend-hint { font-size: 11px; color: #aaa; margin-left: 6px; }
 
+  /* DETAILS HINT */
+  .details-hint {
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.04em;
+    margin-top: 3px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    text-transform: uppercase;
+    opacity: 0.8;
+  }
+
   /* MOBILE CARDS */
   .card-list { display: none; flex-direction: column; gap: 10px; }
   .card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; transition: box-shadow 0.15s; }
@@ -193,7 +205,7 @@
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Date</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Status</th></tr></thead>
+      <thead><tr><th>Date</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Considerations</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
@@ -204,7 +216,7 @@
     <span class="legend-item"><span class="legend-dot" style="background:#92400e"></span><span style="color:#92400e">A Few Things to Know</span></span>
     <span class="legend-item"><span class="legend-dot" style="background:#991b1b"></span><span style="color:#991b1b">Consider Carefully</span></span>
     <span class="legend-item"><span class="legend-dot" style="background:#1d4ed8"></span><span style="color:#1d4ed8">Club Coordinated</span></span>
-    <span class="legend-hint">· Click any row with ▼ to expand guidance notes</span>
+    <span class="legend-hint">· Click any row to expand considerations and guidance notes</span>
   </div>
 </div>
 
@@ -450,13 +462,14 @@ function renderMonth() {
       : `<span class="status-badge ${sm.cls}">${sm.icon} ${sm.label}</span>`;
     const arrowHtml = hasNotes ? `<span class="expand-arrow" id="arrow-${i}">▼</span>` : "";
     const clickAttr = hasNotes ? `onclick="toggleNotes(${i})"` : "";
+    const detailsHint = hasNotes ? `<div class="details-hint">Click row for details</div>` : "";
     return `
       <tr class="data-row${evenCls}${notesCls}" ${clickAttr}>
         <td class="td-date">${t.date}</td>
         <td><div class="td-name">${t.name}${arrowHtml}</div></td>
         <td class="td-location">${t.location}</td>
         <td class="td-levels"><div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div></td>
-        <td>${statusHtml}</td>
+        <td>${statusHtml}${detailsHint}</td>
       </tr>
       ${hasNotes ? `<tr class="notes-row hidden" id="note-${i}"><td colspan="5"><div class="notes-content">${t.notes}</div></td></tr>` : ""}`;
   }).join("");
@@ -480,7 +493,10 @@ function renderMonth() {
         </div>
         <div class="card-bottom">
           <div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div>
-          ${statusHtml}
+          <div>
+            ${statusHtml}
+            ${hasNotes ? '<div class="details-hint">Tap for details</div>' : ''}
+          </div>
         </div>
         ${hasNotes ? `<div class="card-notes" id="cnote-${i}">${t.notes}</div>` : ""}
       </div>`;
