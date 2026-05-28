@@ -164,11 +164,11 @@
         <span class="dot">·</span>
         <span class="season">2026–27 SEASON</span>
       </div>
-      <h1>Recommended Tournament List</h1>
+      <h1>Tournament Guidance List</h1>
     </div>
     <div class="stats">
       <div class="stat"><div class="stat-val" id="total-count">—</div><div class="stat-label">Total Events</div></div>
-      <div class="stat"><div class="stat-val" id="rec-count">—</div><div class="stat-label">Recommended</div></div>
+      <div class="stat"><div class="stat-val" id="rec-count">—</div><div class="stat-label">Valor Picks</div></div>
       <div class="stat"><div class="stat-val" id="month-count">9</div><div class="stat-label">Months</div></div>
     </div>
   </div>
@@ -185,10 +185,10 @@
     <div class="filters">
       <input class="search-input" id="search" type="text" placeholder="Search tournaments…" oninput="applyFilters()">
       <button class="filter-btn active-all" data-filter="all" onclick="setFilter('all')">All</button>
-      <button class="filter-btn" data-filter="recommended" onclick="setFilter('recommended')">✓ Recommended</button>
-      <button class="filter-btn" data-filter="be-aware" onclick="setFilter('be-aware')">⚠ Be Aware</button>
+      <button class="filter-btn" data-filter="recommended" onclick="setFilter('recommended')">✓ Valor Picks</button>
+      <button class="filter-btn" data-filter="be-aware" onclick="setFilter('be-aware')">ℹ A Few Things to Know</button>
       <button class="filter-btn" data-filter="club-event" onclick="setFilter('club-event')">★ Club Event</button>
-      <button class="filter-btn" data-filter="not-recommended" onclick="setFilter('not-recommended')">✗ Not Recommended</button>
+      <button class="filter-btn" data-filter="not-recommended" onclick="setFilter('not-recommended')">! Consider Carefully</button>
     </div>
   </div>
   <div class="table-wrap">
@@ -200,11 +200,11 @@
   <div class="card-list" id="card-list"></div>
   <div class="legend">
     <span class="legend-label">Legend:</span>
-    <span class="legend-item"><span class="legend-dot" style="background:#166534"></span><span style="color:#166534">Recommended</span></span>
-    <span class="legend-item"><span class="legend-dot" style="background:#92400e"></span><span style="color:#92400e">Be Aware</span></span>
-    <span class="legend-item"><span class="legend-dot" style="background:#991b1b"></span><span style="color:#991b1b">Not Recommended</span></span>
-    <span class="legend-item"><span class="legend-dot" style="background:#1d4ed8"></span><span style="color:#1d4ed8">Club Event</span></span>
-    <span class="legend-hint">· Click any row with ▼ to expand notes</span>
+    <span class="legend-item"><span class="legend-dot" style="background:#166534"></span><span style="color:#166534">Valor Pick</span></span>
+    <span class="legend-item"><span class="legend-dot" style="background:#92400e"></span><span style="color:#92400e">A Few Things to Know</span></span>
+    <span class="legend-item"><span class="legend-dot" style="background:#991b1b"></span><span style="color:#991b1b">Consider Carefully</span></span>
+    <span class="legend-item"><span class="legend-dot" style="background:#1d4ed8"></span><span style="color:#1d4ed8">Club Coordinated</span></span>
+    <span class="legend-hint">· Click any row with ▼ to expand guidance notes</span>
   </div>
 </div>
 
@@ -307,6 +307,7 @@ const FALLBACK_MONTHS = [
     { date:"TBA", name:"Baltimore Mania (Girls)", location:"Baltimore", levels:["ECNL-RL","Gold","White"], status:"neutral", notes:"" },
     { date:"TBA", name:"PWSI Ice Breaker Younger", location:"Local", levels:["Gold","White"], status:"be-aware", notes:"U9–U14. Tournament officials not easy to work with. Not flexible on bracket or schedule changes." },
   ]},
+  { label:"April 2027", short:"APR", deadline:"December 1", tournaments:[]},
   { label:"May 2027", short:"MAY", deadline:null, tournaments:[
     { date:"May 29–31", name:"Girls ECNL-RL Showcase", location:"North Carolina", levels:["ECNL-RL"], status:"neutral", notes:"U15–17." },
     { date:"May 29–31", name:"The Virginian", location:"Springfield", levels:["Gold","White","Black"], status:"be-aware", notes:"Memorial Day tournaments are not recommended by the club." },
@@ -317,15 +318,15 @@ const FALLBACK_MONTHS = [
 
 // ── CONSTANTS ──────────────────────────────────────────────────────────────
 const STATUS_META = {
-  recommended:       { label:"Recommended",     icon:"✓", cls:"status-recommended" },
-  "not-recommended": { label:"Not Recommended", icon:"✗", cls:"status-not-recommended" },
-  "be-aware":        { label:"Be Aware",        icon:"⚠", cls:"status-be-aware" },
-  "club-event":      { label:"Club Event",      icon:"★", cls:"status-club-event" },
+  recommended:       { label:"Valor Pick",       icon:"✓", cls:"status-recommended" },
+  "not-recommended": { label:"Consider Carefully", icon:"!", cls:"status-not-recommended" },
+  "be-aware":        { label:"A Few Things to Know", icon:"ℹ", cls:"status-be-aware" },
+  "club-event":      { label:"Club Coordinated", icon:"★", cls:"status-club-event" },
   neutral:           { label:"—",               icon:"",  cls:"status-neutral" },
 };
 const LEVEL_CLS = { "ECNL-RL":"level-ecnl", "Gold":"level-gold", "White":"level-white", "Black":"level-black", "Silver":"level-silver" };
-const MONTH_ORDER = ["August 2026","September 2026","October 2026","November 2026","December 2026","January 2027","February 2027","March 2027","May 2027"];
-const MONTH_SHORTS = { "August 2026":"AUG","September 2026":"SEP","October 2026":"OCT","November 2026":"NOV","December 2026":"DEC","January 2027":"JAN","February 2027":"FEB","March 2027":"MAR","May 2027":"MAY" };
+const MONTH_ORDER = ["August 2026","September 2026","October 2026","November 2026","December 2026","January 2027","February 2027","March 2027","April 2027","May 2027","June 2027","July 2027"];
+const MONTH_SHORTS = { "August 2026":"AUG","September 2026":"SEP","October 2026":"OCT","November 2026":"NOV","December 2026":"DEC","January 2027":"JAN","February 2027":"FEB","March 2027":"MAR","April 2027":"APR","May 2027":"MAY","June 2027":"JUN","July 2027":"JUL" };
 
 // ── STATE ─────────────────────────────────────────────────────────────────
 let MONTHS = FALLBACK_MONTHS;
@@ -412,7 +413,7 @@ function renderMonth() {
   document.getElementById("month-title").textContent = m.label;
   const dl = document.getElementById("month-deadline");
   if (m.deadline) {
-    dl.innerHTML = `<span style="color:var(--gold-dim)">⏱</span> Registration deadline to Beth Morris: <strong>${m.deadline}</strong>`;
+    dl.innerHTML = `<span style="color:var(--gold-dim)">⏱</span> Submit registration interest to Beth Morris by: <strong>${m.deadline}</strong>`;
     dl.style.display = "flex";
   } else { dl.style.display = "none"; }
 
