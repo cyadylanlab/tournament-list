@@ -119,6 +119,22 @@
   .legend-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
   .legend-hint { font-size: 11px; color: #aaa; margin-left: 6px; }
 
+  /* DEADLINE */
+  .td-deadline { min-width: 90px; }
+  .deadline-badge {
+    display: inline-block;
+    background: #FFF8E1;
+    color: #92400E;
+    border: 1px solid #F59E0B44;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+  }
+
   /* DETAILS HINT */
   .details-hint {
     font-size: 10px;
@@ -160,6 +176,7 @@
     .filters { width: 100%; gap: 6px; }
     .search-input { width: 100%; }
     .filter-btn { font-size: 10.5px; padding: 5px 8px; }
+    .td-deadline, th:nth-child(5) { display: none; }
     .table-wrap { display: none; }
     .card-list { display: flex; }
     .legend { gap: 12px; }
@@ -205,7 +222,7 @@
   </div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Date</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Considerations</th></tr></thead>
+      <thead><tr><th>Date</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Deadline</th><th>Considerations</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
@@ -387,7 +404,8 @@ function buildMonthsFromRows(rows) {
     monthMap[month].push({
       date: date || "", name: tournament, location: location || "",
       levels: levels,
-      status: (status || "neutral").trim(), notes: notes || ""
+      status: (status || "neutral").trim(), notes: notes || "",
+      deadline: deadline || ""
     });
   });
   return MONTH_ORDER.filter(m => monthMap[m]).map(m => ({
@@ -469,6 +487,7 @@ function renderMonth() {
         <td><div class="td-name">${t.name}${arrowHtml}</div></td>
         <td class="td-location">${t.location}</td>
         <td class="td-levels"><div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div></td>
+        <td class="td-deadline">${(t.deadline||m.deadline) ? `<span class="deadline-badge">${t.deadline||m.deadline}</span>` : '<span style="color:#ccc">—</span>'}</td>
         <td>${statusHtml}${detailsHint}</td>
       </tr>
       ${hasNotes ? `<tr class="notes-row hidden" id="note-${i}"><td colspan="5"><div class="notes-content">${t.notes}</div></td></tr>` : ""}`;
@@ -490,6 +509,7 @@ function renderMonth() {
           <span class="card-date">${t.date}</span>
           <span style="color:#ddd;font-size:11px;">·</span>
           <span class="card-location">${t.location}</span>
+          ${(t.deadline||m.deadline) ? `<span style="color:#ddd;font-size:11px;">·</span><span class="deadline-badge" style="font-size:10px;">Due ${t.deadline||m.deadline}</span>` : ''}
         </div>
         <div class="card-bottom">
           <div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div>
