@@ -212,7 +212,7 @@
 // ── SHEET URL ──────────────────────────────────────────────────────────────
 // Paste your published CSV URL here after running the Apps Script setup.
 // File > Share > Publish to web > LiveData tab > CSV format > copy URL
-const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1GPjGybjA370oALSHsRvqLUz913Zk4yd-uYthhZyEoGE/pub?output=csv&gid=796791095";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/1Akg6wxSywlUx_gvxWJcaGXA4h-_78JQtrLke4MOIpTQ/pub?output=csv";
 
 // ── FALLBACK DATA (used until sheet URL is set) ────────────────────────────
 const FALLBACK_MONTHS = [
@@ -360,14 +360,21 @@ function parseCSV(text) {
 function buildMonthsFromRows(rows) {
   const dataRows = rows.slice(1);
   const monthMap = {}, deadlineMap = {};
+  // Columns: Month, Deadline, Date, Tournament, Location, ECNL-RL, Gold, White, Black, Silver, Status, Notes
+  const LEVEL_COLS = ["ECNL-RL","Gold","White","Black","Silver"];
   dataRows.forEach(r => {
-    const [month, deadline, date, tournament, location, levels, status, notes] = r;
+    const [month, deadline, date, tournament, location, ecnl, gold, white, black, silver, status, notes] = r;
     if (!month || !tournament) return;
     if (!monthMap[month]) monthMap[month] = [];
     if (deadline) deadlineMap[month] = deadline;
+    const checkboxes = [ecnl, gold, white, black, silver];
+    const levels = LEVEL_COLS.filter((_, i) => {
+      const v = (checkboxes[i] || "").trim().toUpperCase();
+      return v === "TRUE" || v === "1" || v === "YES";
+    });
     monthMap[month].push({
       date: date || "", name: tournament, location: location || "",
-      levels: levels ? levels.split(",").map(l => l.trim()).filter(Boolean) : [],
+      levels: levels,
       status: (status || "neutral").trim(), notes: notes || ""
     });
   });
