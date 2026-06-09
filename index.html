@@ -434,67 +434,39 @@
     margin-top: 16px; border: 1px solid var(--border); border-radius: 8px;
     overflow: hidden; background: #fff; width: 100%; box-sizing: border-box;
   }
-  .slots-header {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 10px 16px; background: #1a1a1a; flex-wrap: wrap; gap: 6px;
-  }
-  .slots-header-title {
-    font-family: "Bebas Neue", sans-serif; font-size: 14px;
-    letter-spacing: 0.12em; color: #fff; font-weight: 900;
-  }
+  .slots-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; background: #1a1a1a; flex-wrap: wrap; gap: 6px; }
+  .slots-header-title { font-family: "Bebas Neue", sans-serif; font-size: 14px; letter-spacing: 0.12em; color: #fff; }
   .slots-header-sub { font-size: 11px; color: #666; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.04em; }
-  .slots-row {
-    display: flex; gap: 8px; padding: 12px 14px;
-    align-items: stretch; width: 100%; box-sizing: border-box;
-  }
-  .slot-card {
-    flex: 1 1 0; min-width: 0; width: 0; border-radius: 6px;
-    border: 1.5px dashed #ddd; padding: 10px 12px;
-    background: #fafafa; min-height: 80px;
-    display: flex; flex-direction: column; justify-content: space-between;
-    transition: all 0.2s;
-  }
-  .slot-card.filled {
-    border: 1.5px solid var(--gold); background: rgba(166,124,0,0.06); cursor: pointer;
-  }
-  .slot-card.invoice-slot {
-    border: 1.5px solid #f59e0b; background: rgba(245,158,11,0.05);
-  }
+  .slots-body { display: flex; align-items: stretch; }
+  .slots-grid { flex: 3; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 12px 14px; box-sizing: border-box; }
+  .slots-right { flex: 1; min-width: 155px; padding: 14px 16px; border-left: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; gap: 10px; background: #fafafa; }
+  .slots-right-count { font-size: 26px; font-weight: 900; color: var(--gold); line-height: 1; font-family: "Bebas Neue", sans-serif; }
+  .slots-right-label { font-size: 10px; color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; margin-top: 2px; font-family: "Barlow Condensed", sans-serif; }
+  .slots-right-breakdown { font-size: 11px; color: var(--muted2); line-height: 1.7; font-family: "Barlow Condensed", sans-serif; }
+  .slots-submit-btn { background: #e6b800; color: #fff; border: none; border-radius: 6px; padding: 10px 12px; font-family: "Bebas Neue", sans-serif; font-size: 14px; letter-spacing: 0.1em; cursor: pointer; transition: background 0.15s; width: 100%; font-weight: 700; }
+  .slots-submit-btn:hover { background: #c9a000; }
+  .slot-card { border-radius: 6px; border: 1.5px dashed #ddd; padding: 8px 10px; background: #fafafa; min-height: 110px; display: flex; flex-direction: column; transition: all 0.2s; position: relative; }
+  .slot-card.filled { border: 1.5px solid var(--gold); background: rgba(166,124,0,0.06); }
+  .slot-card.invoice-slot { border: 1.5px solid #f59e0b; background: rgba(245,158,11,0.05); }
   .slot-card.invoice-slot.filled { border: 1.5px solid #f59e0b; background: rgba(245,158,11,0.08); }
-  .slot-top { display: flex; align-items: center; gap: 4px; }
-  .slot-num {
-    font-size: 10px; font-weight: 700; color: #ccc;
-    font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.08em;
-  }
+  .slot-top { display: flex; align-items: center; gap: 4px; margin-bottom: 3px; }
+  .slot-num { font-size: 10px; font-weight: 700; color: #ccc; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.08em; }
   .slot-card.filled .slot-num { color: var(--gold); }
   .slot-card.invoice-slot .slot-num { color: #f59e0b; }
-  .slot-tag {
-    font-size: 9px; font-weight: 700; font-family: "Barlow Condensed", sans-serif;
-    letter-spacing: 0.06em; padding: 1px 5px; border-radius: 2px; text-transform: uppercase;
-  }
+  .slot-tag { font-size: 9px; font-weight: 700; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.06em; padding: 1px 5px; border-radius: 2px; text-transform: uppercase; }
   .tag-min { background: rgba(29,78,216,0.08); color: #1d4ed8; border: 1px solid rgba(29,78,216,0.2); }
   .tag-max { background: rgba(22,101,52,0.08); color: #166534; border: 1px solid rgba(22,101,52,0.2); }
   .tag-invoice-s { background: rgba(245,158,11,0.1); color: #92400e; border: 1px solid rgba(245,158,11,0.3); }
-  .slot-name {
-    font-size: 11.5px; font-weight: 700; color: #111; line-height: 1.3;
-    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
-    margin-top: 4px;
-  }
-  .slot-empty-label { font-size: 11px; color: #bbb; font-style: italic; margin-top: 4px; }
-  .slot-detail { font-size: 10.5px; color: var(--muted2); font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.03em; margin-top: 3px; }
-  .slot-card.filled .slot-detail { color: #777; }
-  .slot-card.invoice-slot .slot-detail { color: #a16207; }
-  .slot-remove-x {
-    position: absolute; top: 5px; right: 7px; font-size: 11px; color: #ccc;
-    cursor: pointer; line-height: 1; transition: color 0.15s;
-  }
+  .slot-name { font-size: 11px; font-weight: 700; color: #111; line-height: 1.3; flex: 1; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .slot-detail { font-size: 10px; color: var(--muted2); font-family: "Barlow Condensed", sans-serif; margin-top: 2px; }
+  .slot-empty-label { font-size: 11px; color: #bbb; font-style: italic; margin-top: 4px; flex: 1; }
+  .slot-remove-x { position: absolute; top: 5px; right: 7px; font-size: 11px; color: #ccc; cursor: pointer; line-height: 1; transition: color 0.15s; }
   .slot-remove-x:hover { color: #ef4444; }
-  .slot-card { position: relative; }
-  @media (max-width: 700px) {
-    .slots-row { flex-wrap: wrap; }
-    .slot-card { flex: 1 1 calc(50% - 4px); min-height: 64px; }
-  }
-
+  .slot-entry-pills { display: flex; gap: 3px; margin-top: 5px; flex-wrap: wrap; }
+  .slot-entry-pill { font-size: 9px; font-weight: 700; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.03em; padding: 2px 5px; border-radius: 3px; cursor: pointer; border: 1px solid #ddd; background: transparent; color: #aaa; transition: all 0.15s; }
+  .slot-entry-pill.active { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .slot-entry-pill:hover:not(.active) { border-color: var(--gold); color: var(--gold); }
+  @media (max-width: 700px) { .slots-body { flex-direction: column; } .slots-grid { grid-template-columns: repeat(2, 1fr); } .slots-right { border-left: none; border-top: 1px solid var(--border); } }
 
   /* REVISION PREV SELECTIONS */
   .rev-prev-item {
@@ -623,9 +595,16 @@
   <div class="slots-bar" id="slots-bar">
     <div class="slots-header">
       <span class="slots-header-title">Your Selections</span>
-      <span class="slots-header-sub">Slots 1–5 included &nbsp;·&nbsp; Slot 3 = minimum &nbsp;·&nbsp; Slot 5 = max included &nbsp;·&nbsp; 6+ invoiced</span>
+      <span class="slots-header-sub">Slots 1–5 included &nbsp;·&nbsp; Slot 3 = minimum &nbsp;·&nbsp; Slot 5 = max &nbsp;·&nbsp; 6+ invoiced</span>
     </div>
-    <div class="slots-row" id="slots-row"></div>
+    <div class="slots-body">
+      <div class="slots-grid" id="slots-row"></div>
+      <div class="slots-right" id="slots-right">
+        <div class="slots-right-count" id="slots-right-count">0 / 5<div class="slots-right-label">Included</div></div>
+        <div class="slots-right-breakdown" id="slots-right-breakdown"></div>
+        <button class="slots-submit-btn" onclick="openForm()">Complete Submission →</button>
+      </div>
+    </div>
   </div>
 
   <div class="legend">
@@ -1527,44 +1506,68 @@ function parseStatusCSV(text) {
 // ── SELECTION SLOTS ───────────────────────────────────────────────────────
 function renderSlots() {
   const row = document.getElementById("slots-row");
+  const rightCount = document.getElementById("slots-right-count");
+  const rightBreakdown = document.getElementById("slots-right-breakdown");
   if (!row) return;
 
   const total = selectionOrder.length;
-  const TOTAL_SHOWN = Math.max(5, total); // always show at least 5
+  const included = Math.min(total, INCLUDED_MAX);
+  const additional = Math.max(0, total - INCLUDED_MAX);
+  const TOTAL_SHOWN = Math.max(6, total); // show at least 6 (5 + 1 invoice)
+  const LEVELS = ["Most Competitive", "Competitive", "Least Competitive"];
+  const LEVEL_SHORT = ["Most", "Comp", "Least"];
 
+  // Grid cards
   let html = "";
   for (let idx = 0; idx < TOTAL_SHOWN; idx++) {
-    const slotNum  = idx + 1;
-    const uid      = selectionOrder[idx] || null;
-    const s        = uid ? selectedMap[uid] : null;
+    const slotNum   = idx + 1;
+    const uid       = selectionOrder[idx] || null;
+    const s         = uid ? selectedMap[uid] : null;
     const isInvoice = idx >= INCLUDED_MAX;
     const isFilled  = !!s;
 
-    // Tag label
     let tagHtml = "";
-    if (slotNum === 3)        tagHtml = `<span class="slot-tag tag-min">Min</span>`;
-    else if (slotNum === 5)   tagHtml = `<span class="slot-tag tag-max">Max</span>`;
-    else if (isInvoice)       tagHtml = `<span class="slot-tag tag-invoice-s">Invoice</span>`;
+    if (slotNum === 3)      tagHtml = `<span class="slot-tag tag-min">Min</span>`;
+    else if (slotNum === 5) tagHtml = `<span class="slot-tag tag-max">Max</span>`;
+    else if (isInvoice)     tagHtml = `<span class="slot-tag tag-invoice-s">Invoice</span>`;
 
     const cardClass = `slot-card${isFilled ? " filled" : ""}${isInvoice ? " invoice-slot" : ""}`;
     const removeBtn = isFilled ? `<span class="slot-remove-x" onclick="removeSelection('${uid}')" title="Remove">&times;</span>` : "";
 
+    let pillsHtml = "";
+    if (isFilled) {
+      pillsHtml = `<div class="slot-entry-pills">${LEVELS.map((lv, li) =>
+        `<button class="slot-entry-pill${s.level === lv ? " active" : ""}" onclick="setLevelFromSlot('${uid}','${lv}')">${LEVEL_SHORT[li]}</button>`
+      ).join("")}</div>`;
+    }
+
     const body = isFilled
       ? `<div class="slot-name">${s.name}</div>
-         <div class="slot-detail">${s.date}${s.location ? " &middot; " + s.location : ""}</div>`
+         <div class="slot-detail">${s.date}${s.location ? " &middot; " + s.location : ""}</div>
+         ${pillsHtml}`
       : `<div class="slot-empty-label">${isInvoice ? "Additional" : "Open"}</div>`;
 
-    html += `
-      <div class="${cardClass}">
-        ${removeBtn}
-        <div class="slot-top">
-          <span class="slot-num">${slotNum}</span>
-          ${tagHtml}
-        </div>
-        ${body}
-      </div>`;
+    html += `<div class="${cardClass}">${removeBtn}<div class="slot-top"><span class="slot-num">${slotNum}</span>${tagHtml}</div>${body}</div>`;
   }
   row.innerHTML = html;
+
+  // Right side summary
+  if (rightCount) {
+    rightCount.innerHTML = `${included} / ${INCLUDED_MAX}<div class="slots-right-label">Included</div>`;
+  }
+  if (rightBreakdown) {
+    let bd = `<span style="color:#22c55e">&#10003; ${included} Included</span>`;
+    if (additional > 0) bd += `<br><span style="color:#f59e0b">&#9888; ${additional} Additional</span>`;
+    rightBreakdown.innerHTML = bd;
+  }
+}
+
+function setLevelFromSlot(uid, level) {
+  if (selectedMap[uid]) {
+    selectedMap[uid].level = level;
+    renderSlots();
+    renderSelectionList(); // keep panel in sync
+  }
 }
 
 
