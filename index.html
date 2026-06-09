@@ -495,6 +495,23 @@
     .slot-card { flex: 1 1 calc(50% - 4px); min-height: 64px; }
   }
 
+
+  /* REVISION PREV SELECTIONS */
+  .rev-prev-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 24px; border-bottom: 1px solid #f5f5f5; gap: 12px; flex-wrap: wrap;
+  }
+  .rev-prev-item:last-child { border-bottom: none; }
+  .rev-prev-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+  .rev-prev-meta { font-size: 11px; color: var(--muted2); font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.03em; }
+  .rev-keep-btn {
+    font-size: 11px; font-weight: 700; font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.06em; padding: 4px 10px; border-radius: 4px; cursor: pointer;
+    transition: all 0.15s; border: 1px solid;
+  }
+  .rev-keep-btn.keeping { background: rgba(22,101,52,0.08); color: #166534; border-color: rgba(22,101,52,0.3); }
+  .rev-keep-btn.dropping { background: rgba(153,27,27,0.08); color: #991b1b; border-color: rgba(153,27,27,0.3); text-decoration: line-through; opacity: 0.6; }
+
   /* RESPONSIVE */
   @media (max-width: 700px) {
     .header { padding: 20px 16px 16px; }
@@ -1089,10 +1106,17 @@ function closeForm() {
 }
 
 // ── REVISION FLOW ─────────────────────────────────────────────────────────
+let previousSelections = []; // tournaments from last submission
+let droppingUids = new Set(); // uids coach has marked to drop
+
 function startRevision() {
-  // Open modal instead of using browser prompt
   document.getElementById("revision-overlay").classList.add("open");
   document.getElementById("revision-email-input").value = "";
+  document.getElementById("rev-lookup-result").innerHTML = "";
+  document.getElementById("rev-step-1").style.display = "block";
+  document.getElementById("rev-step-2").style.display = "none";
+  document.getElementById("rev-modal-title").textContent = "Revise / Modify My Selections";
+  droppingUids = new Set();
   setTimeout(() => document.getElementById("revision-email-input").focus(), 150);
 }
 
@@ -1100,13 +1124,107 @@ function closeRevisionModal() {
   document.getElementById("revision-overlay").classList.remove("open");
 }
 
-function confirmRevision() {
-  const email = document.getElementById("revision-email-input").value.trim();
+function backToRevEmail() {
+  document.getElementById("rev-step-1").style.display = "block";
+  document.getElementById("rev-step-2").style.display = "none";
+  document.getElementById("rev-modal-title").textContent = "Revise / Modify My Selections";
+}
+
+async function lookUpPreviousSelections() {
+  const email = document.getElementById("revision-email-input").value.trim().toLowerCase();
   if (!email || !email.includes("@")) { alert("Please enter a valid email address."); return; }
 
+  const btn = document.getElementById("rev-lookup-btn");
+  btn.textContent = "Loading...";
+  btn.disabled = true;
+  document.getElementById("rev-lookup-result").innerHTML = "";
+
+  try {
+    if (!STATUS_CSV_URL) throw new Error("No status URL");
+    const res  = await fetch(STATUS_CSV_URL);
+    const text = await res.text();
+    const rows = parseStatusCSV(text);
+    const mine = rows.filter(r => (r.email||"").toLowerCase() === email);
+
+    btn.textContent = "Load My Selections";
+    btn.disabled = false;
+
+    if (mine.length === 0) {
+      document.getElementById("rev-lookup-result").innerHTML =
+        '<p style="color:var(--red);margin-top:8px;">No previous submissions found for this email. Check the address or contact club staff.</p>';
+      return;
+    }
+
+    previousSelections = mine;
+    revisionEmail = email;
+    renderPreviousSelectionsInModal(mine);
+    document.getElementById("rev-step-1").style.display = "none";
+    document.getElementById("rev-step-2").style.display = "block";
+    document.getElementById("rev-modal-title").textContent = "Your Current Selections";
+  } catch(e) {
+    btn.textContent = "Load My Selections";
+    btn.disabled = false;
+    document.getElementById("rev-lookup-result").innerHTML =
+      '<p style="color:var(--red);margin-top:8px;">Could not load selections. Try again or contact club staff.</p>';
+  }
+}
+
+function renderPreviousSelectionsInModal(selections) {
+  const monthOrder = ["August 2026","September 2026","October 2026","November 2026","December 2026","January 2027","February 2027","March 2027","April 2027","May 2027","June 2027","July 2027","Club Event"];
+  const grouped = {};
+  selections.forEach(s => {
+    const m = s.month || "Other";
+    if (!grouped[m]) grouped[m] = [];
+    grouped[m].push(s);
+  });
+
+  let html = "";
+  monthOrder.forEach(month => {
+    if (!grouped[month]) return;
+    html += `<div class="status-month-label">${month}</div>`;
+    grouped[month].forEach((s, i) => {
+      const key = s.tournament + "|" + s.date;
+      const isDrop = droppingUids.has(key);
+      html += `
+        <div class="rev-prev-item" id="revitem-${btoa(key).replace(/=/g,'')}">
+          <div>
+            <div class="rev-prev-name" style="${isDrop ? 'text-decoration:line-through;opacity:0.5' : ''}">${s.tournament}</div>
+            <div class="rev-prev-meta">${s.month !== "Club Event" ? (MONTH_SHORTS_ALL[s.month]||s.month) + " &middot; " : ""}${s.date}</div>
+          </div>
+          <button class="rev-keep-btn ${isDrop ? 'dropping' : 'keeping'}"
+            onclick="toggleDropSelection('${key.replace(/'/g,"\'")}')">
+            ${isDrop ? "Removed — click to keep" : "Keeping &nbsp;✓"}
+          </button>
+        </div>`;
+    });
+  });
+  document.getElementById("rev-prev-list").innerHTML = html;
+}
+
+function toggleDropSelection(key) {
+  if (droppingUids.has(key)) {
+    droppingUids.delete(key);
+  } else {
+    droppingUids.add(key);
+  }
+  renderPreviousSelectionsInModal(previousSelections);
+}
+
+function findTournamentUid(name) {
+  if (name === "Presidents Cup") return "club-presidents-cup";
+  if (name === "State Cup")      return "club-state-cup";
+  for (let mi = 0; mi < MONTHS.length; mi++) {
+    for (let ti = 0; ti < MONTHS[mi].tournaments.length; ti++) {
+      if (MONTHS[mi].tournaments[ti].name === name) return `${mi}-${ti}`;
+    }
+  }
+  return null;
+}
+
+function confirmRevision() {
   closeRevisionModal();
 
-  // Reset selections directly without triggering updatePanel hide logic
+  // Clear current state without triggering updatePanel hide
   Object.keys(selectedMap).forEach(uid => {
     document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
     document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.remove("selected"));
@@ -1115,10 +1233,23 @@ function confirmRevision() {
   });
   selectedMap = {};
   selectionOrder = [];
-  renderSlots();
 
-  isRevision    = true;
-  revisionEmail = email;
+  // Pre-load kept selections
+  previousSelections.forEach(s => {
+    const key = s.tournament + "|" + s.date;
+    if (droppingUids.has(key)) return; // skip dropped ones
+    const uid = findTournamentUid(s.tournament);
+    if (!uid) return;
+    selectedMap[uid] = { name: s.tournament, date: s.date, month: s.month, location: s.location || "", level: null };
+    selectionOrder.push(uid);
+    // Check the boxes on the page
+    document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = true);
+    document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.add("selected"));
+    const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
+    if (rowEl) rowEl.classList.add("selected");
+  });
+
+  isRevision = true;
   panelExpanded = true;
 
   const panel = document.getElementById("sel-panel");
@@ -1126,14 +1257,18 @@ function confirmRevision() {
   panel.classList.add("visible","expanded");
   document.body.classList.add("panel-open","panel-expanded");
   document.getElementById("panel-toggle-label").textContent = "Collapse \u25bc";
-  document.getElementById("panel-count-num").textContent = "0";
+  document.getElementById("panel-count-num").textContent = selectionOrder.length.toString();
+
+  renderSlots();
+  renderCalendar();
+  renderSelectionList();
 
   const bEl = document.getElementById("panel-breakdown");
-  bEl.innerHTML = `<span style="color:var(--gold)">\u270f Revision mode &mdash; re-select your full updated tournament list, then submit</span>`;
+  const kept = selectionOrder.length;
+  const dropped = droppingUids.size;
+  bEl.innerHTML = `<span style="color:var(--gold)">\u270f Revision mode &mdash; ${kept} kept, ${dropped} removed. Browse the list to add replacements, then submit.</span>`;
   bEl.style.display = "block";
 
-  // Render the empty selection list and scroll up so coach can start picking
-  renderSelectionList();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -1539,20 +1674,34 @@ renderSlots(); // show empty slots framework on load</script>
 
 <!-- REVISION EMAIL MODAL -->
 <div class="status-modal-overlay" id="revision-overlay" onclick="if(event.target===this)closeRevisionModal()">
-  <div class="status-modal">
+  <div class="status-modal" style="max-width:740px;">
     <div class="status-modal-header">
-      <div class="status-modal-title">Revise / Modify My Selections</div>
+      <div class="status-modal-title" id="rev-modal-title">Revise / Modify My Selections</div>
       <button class="status-modal-close" onclick="closeRevisionModal()">&times;</button>
     </div>
-    <div class="status-lookup">
-      <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Enter the email address you used when you originally submitted. This lets us match your revision to your existing record.</p>
-      <div class="status-lookup-row">
-        <input type="email" class="status-lookup-input" id="revision-email-input" placeholder="coach@email.com" onkeydown="if(event.key==='Enter')confirmRevision()">
-        <button class="status-lookup-btn" onclick="confirmRevision()">Start Revision</button>
+
+    <!-- STEP 1: Email lookup -->
+    <div id="rev-step-1">
+      <div class="status-lookup">
+        <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Enter the email you used when you originally submitted and we will load your previous selections.</p>
+        <div class="status-lookup-row">
+          <input type="email" class="status-lookup-input" id="revision-email-input" placeholder="coach@email.com" onkeydown="if(event.key==='Enter')lookUpPreviousSelections()">
+          <button class="status-lookup-btn" id="rev-lookup-btn" onclick="lookUpPreviousSelections()">Load My Selections</button>
+        </div>
       </div>
+      <div id="rev-lookup-result" style="padding:0 24px 16px;font-size:12.5px;color:var(--muted2);"></div>
     </div>
-    <div style="padding:16px 24px 20px;">
-      <p style="font-size:12px;color:var(--muted2);line-height:1.6;">After confirming your email, the page will open in revision mode. Re-select your full updated tournament list and resubmit — your original record will be replaced with your new selections.</p>
+
+    <!-- STEP 2: Previous selections list -->
+    <div id="rev-step-2" style="display:none;">
+      <div style="padding:14px 24px 10px;border-bottom:1px solid var(--border);">
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;">These are your current selections. Remove the ones you want to drop, then click <strong>Continue</strong> to browse the full list and add replacements.</p>
+      </div>
+      <div id="rev-prev-list" class="status-results" style="max-height:340px;"></div>
+      <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;">
+        <button onclick="backToRevEmail()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">← Back</button>
+        <button onclick="confirmRevision()" class="status-lookup-btn" style="flex:1;">Continue to Full List →</button>
+      </div>
     </div>
   </div>
 </div>
