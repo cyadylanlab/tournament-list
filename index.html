@@ -1150,14 +1150,14 @@ function renderSelectionList() {
 // ── SUBMIT ────────────────────────────────────────────────────────────────
 async function submitSelections() {
   const coach    = document.getElementById("f-coach").value.trim();
-  const team     = document.getElementById("f-team").value.trim();
   const age      = document.getElementById("f-age").value;
   const gender   = document.getElementById("f-gender").value;
   const level    = document.getElementById("f-level").value;
   const email    = document.getElementById("f-email").value.trim();
+  const team     = age && gender && level ? age + " " + gender + " " + level : "";
   const revNotes = document.getElementById("f-rev-notes") ? document.getElementById("f-rev-notes").value.trim() : "";
 
-  if (!coach || !team || !age || !gender || !level || !email) { alert("Please fill in all fields before submitting."); return; }
+  if (!coach || !age || !gender || !level || !email) { alert("Please fill in all fields before submitting."); return; }
   if (!email.includes("@")) { alert("Please enter a valid email address."); return; }
   if (selectionOrder.length === 0) { alert("Please select at least one tournament."); return; }
 
@@ -1455,17 +1455,13 @@ renderSlots(); // show empty slots framework on load</script>
         <label>Coach Name *</label>
         <input type="text" id="f-coach" placeholder="First and last name">
       </div>
-      <div class="form-field full">
-        <label>Team Designation *</label>
-        <input type="text" id="f-team" placeholder="e.g. 2012 Girls, 2014 Boys">
-      </div>
       <div class="form-field">
-        <label>Age Group *</label>
+        <label>Age *</label>
         <select id="f-age">
           <option value="">Select</option>
-          <option>U8</option><option>U9</option><option>U10</option><option>U11</option>
-          <option>U12</option><option>U13</option><option>U14</option><option>U15</option>
-          <option>U16</option><option>U17</option><option>U18</option><option>U19</option>
+          <option>U9</option><option>U10</option><option>U11</option><option>U12</option>
+          <option>U13</option><option>U14</option><option>U15</option><option>U16</option>
+          <option>U17</option><option>U18</option>
         </select>
       </div>
       <div class="form-field">
@@ -1476,19 +1472,16 @@ renderSlots(); // show empty slots framework on load</script>
         </select>
       </div>
       <div class="form-field full">
-        <label>Competition Level *</label>
+        <label>Team *</label>
         <select id="f-level">
-          <option value="">Select your team level</option>
-          <optgroup label="Most Competitive">
-            <option>ECNL-RL</option>
-            <option>Pre-ECNL (U11-U12 only)</option>
-          </optgroup>
-          <optgroup label="Competitive">
-            <option>Gold</option><option>Blue</option>
-          </optgroup>
-          <optgroup label="Least Competitive">
-            <option>White</option><option>Black</option><option>Silver</option>
-          </optgroup>
+          <option value="">Select your team</option>
+          <option>ECNL-RL</option>
+          <option>Pre-ECNL</option>
+          <option>Gold</option>
+          <option>White</option>
+          <option>Black</option>
+          <option>Silver</option>
+          <option>Blue</option>
         </select>
       </div>
       <div class="form-field full">
