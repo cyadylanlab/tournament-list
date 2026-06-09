@@ -211,7 +211,7 @@
   .panel-bar:hover { background: #222; }
   .panel-count {
     font-family: 'Bebas Neue', sans-serif; font-size: 16px;
-    letter-spacing: 0.12em; color: #fff;
+    letter-spacing: 0.12em; color: #fff; font-weight: 900;
   }
   .panel-count span { color: var(--gold); font-size: 22px; }
   .panel-toggle-btn {
@@ -256,7 +256,7 @@
   }
   .sel-remove:hover { color: #ef4444; }
   .sel-info { flex: 1; min-width: 180px; }
-  .sel-name { font-weight: 600; font-size: 13px; color: #e5e7eb; line-height: 1.3; }
+  .sel-name { font-weight: 700; font-size: 13px; color: #ffffff; line-height: 1.3; }
   .sel-meta { font-size: 11px; color: #555; margin-top: 2px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.03em; }
   .sel-levels { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
   .sel-level-btn {
@@ -266,7 +266,7 @@
     transition: all 0.15s;
   }
   .sel-level-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
-  .sel-level-label { font-size: 10px; color: #444; letter-spacing: 0.06em; font-family: 'Barlow Condensed', sans-serif; }
+  .sel-level-label { font-size: 10px; color: #999; letter-spacing: 0.06em; font-family: 'Barlow Condensed', sans-serif; }
 
   /* PANEL FOOTER */
   .panel-footer {
@@ -293,12 +293,12 @@
   .panel.form-mode .panel-form { display: flex; }
   .form-header { padding: 14px 24px; border-bottom: 1px solid #2a2a2a; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
   .form-header-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: #fff; }
-  .form-back { font-size: 11px; color: #555; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; transition: color 0.15s; }
+  .form-back { font-size: 11px; color: #999; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; transition: color 0.15s; }
   .form-back:hover { color: var(--gold); }
   .form-fields { padding: 16px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow-y: auto; flex: 1; }
   .form-field { display: flex; flex-direction: column; gap: 5px; }
   .form-field.full { grid-column: 1 / -1; }
-  .form-field label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #555; text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; }
+  .form-field label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #aaa; text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; }
   .form-field input, .form-field select {
     background: #222; border: 1px solid #333; border-radius: 5px;
     color: #e5e7eb; padding: 8px 10px; font-family: 'Barlow', sans-serif; font-size: 13px;
@@ -434,6 +434,70 @@
   }
   .status-header-btn:hover { color: var(--gold); }
 
+
+  /* ── SELECTION SLOTS ── */
+  .slots-bar {
+    margin-top: 16px; border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; background: #fff;
+  }
+  .slots-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; background: #1a1a1a; flex-wrap: wrap; gap: 6px;
+  }
+  .slots-header-title {
+    font-family: "Bebas Neue", sans-serif; font-size: 14px;
+    letter-spacing: 0.12em; color: #fff; font-weight: 900;
+  }
+  .slots-header-sub { font-size: 11px; color: #666; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.04em; }
+  .slots-row {
+    display: flex; gap: 8px; padding: 12px 14px;
+    overflow-x: auto; scrollbar-width: none; align-items: stretch;
+  }
+  .slots-row::-webkit-scrollbar { display: none; }
+  .slot-card {
+    flex-shrink: 0; width: 155px; border-radius: 6px;
+    border: 1.5px dashed #ddd; padding: 8px 10px;
+    background: #fafafa; min-height: 72px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    transition: all 0.2s;
+  }
+  .slot-card.filled {
+    border: 1.5px solid var(--gold); background: rgba(166,124,0,0.06); cursor: pointer;
+  }
+  .slot-card.invoice-slot {
+    border: 1.5px solid #f59e0b; background: rgba(245,158,11,0.05);
+  }
+  .slot-card.invoice-slot.filled { border: 1.5px solid #f59e0b; background: rgba(245,158,11,0.08); }
+  .slot-top { display: flex; align-items: center; gap: 4px; }
+  .slot-num {
+    font-size: 10px; font-weight: 700; color: #ccc;
+    font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.08em;
+  }
+  .slot-card.filled .slot-num { color: var(--gold); }
+  .slot-card.invoice-slot .slot-num { color: #f59e0b; }
+  .slot-tag {
+    font-size: 9px; font-weight: 700; font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.06em; padding: 1px 5px; border-radius: 2px; text-transform: uppercase;
+  }
+  .tag-min { background: rgba(29,78,216,0.08); color: #1d4ed8; border: 1px solid rgba(29,78,216,0.2); }
+  .tag-max { background: rgba(22,101,52,0.08); color: #166534; border: 1px solid rgba(22,101,52,0.2); }
+  .tag-invoice-s { background: rgba(245,158,11,0.1); color: #92400e; border: 1px solid rgba(245,158,11,0.3); }
+  .slot-name {
+    font-size: 11.5px; font-weight: 700; color: #111; line-height: 1.3;
+    overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    margin-top: 4px;
+  }
+  .slot-empty-label { font-size: 11px; color: #bbb; font-style: italic; margin-top: 4px; }
+  .slot-remove-x {
+    position: absolute; top: 5px; right: 7px; font-size: 11px; color: #ccc;
+    cursor: pointer; line-height: 1; transition: color 0.15s;
+  }
+  .slot-remove-x:hover { color: #ef4444; }
+  .slot-card { position: relative; }
+  @media (max-width: 700px) {
+    .slot-card { width: 130px; min-height: 64px; }
+  }
+
   /* RESPONSIVE */
   @media (max-width: 700px) {
     .header { padding: 20px 16px 16px; }
@@ -527,6 +591,16 @@
     </table>
   </div>
   <div class="card-list" id="card-list"></div>
+
+  <!-- SELECTION SLOTS -->
+  <div class="slots-bar" id="slots-bar">
+    <div class="slots-header">
+      <span class="slots-header-title">Your Selections</span>
+      <span class="slots-header-sub">Slots 1–5 included &nbsp;·&nbsp; Slot 3 = minimum &nbsp;·&nbsp; Slot 5 = max included &nbsp;·&nbsp; 6+ invoiced</span>
+    </div>
+    <div class="slots-row" id="slots-row"></div>
+  </div>
+
   <div class="legend">
     <span class="legend-label">Legend:</span>
     <span class="legend-item"><span class="legend-dot" style="background:#166534"></span><span style="color:#166534">Valor Pick</span></span>
@@ -971,6 +1045,7 @@ function updatePanel() {
     renderCalendar();
     renderSelectionList();
   }
+  renderSlots();
 }
 
 function togglePanel() {
@@ -1261,6 +1336,50 @@ function parseStatusCSV(text) {
     status:     r[6] || "Pending",
     notes:      r[7] || ""
   }));
+}
+
+
+
+// ── SELECTION SLOTS ───────────────────────────────────────────────────────
+function renderSlots() {
+  const row = document.getElementById("slots-row");
+  if (!row) return;
+
+  const total = selectionOrder.length;
+  const TOTAL_SHOWN = Math.max(5, total); // always show at least 5
+
+  let html = "";
+  for (let idx = 0; idx < TOTAL_SHOWN; idx++) {
+    const slotNum  = idx + 1;
+    const uid      = selectionOrder[idx] || null;
+    const s        = uid ? selectedMap[uid] : null;
+    const isInvoice = idx >= INCLUDED_MAX;
+    const isFilled  = !!s;
+
+    // Tag label
+    let tagHtml = "";
+    if (slotNum === 3)        tagHtml = `<span class="slot-tag tag-min">Min</span>`;
+    else if (slotNum === 5)   tagHtml = `<span class="slot-tag tag-max">Max</span>`;
+    else if (isInvoice)       tagHtml = `<span class="slot-tag tag-invoice-s">Invoice</span>`;
+
+    const cardClass = `slot-card${isFilled ? " filled" : ""}${isInvoice ? " invoice-slot" : ""}`;
+    const removeBtn = isFilled ? `<span class="slot-remove-x" onclick="removeSelection('${uid}')" title="Remove">&times;</span>` : "";
+
+    const body = isFilled
+      ? `<div class="slot-name">${s.name}</div>`
+      : `<div class="slot-empty-label">${isInvoice ? "Additional" : "Open"}</div>`;
+
+    html += `
+      <div class="${cardClass}">
+        ${removeBtn}
+        <div class="slot-top">
+          <span class="slot-num">${slotNum}</span>
+          ${tagHtml}
+        </div>
+        ${body}
+      </div>`;
+  }
+  row.innerHTML = html;
 }
 
 
