@@ -1186,13 +1186,19 @@ function renderPreviousSelectionsInModal(selections) {
       const key = s.tournament + "|" + s.date;
       const safeKey = key.replace(/'/g,"\'");
       const isDrop = droppingUids.has(key);
+      const statusKey = (s.status||"Pending").toLowerCase().replace(/\s+/g,"-");
+      const statusClass = { "pending":"s-pending","applied":"s-applied","accepted":"s-accepted","declined":"s-declined","waitlisted":"s-waitlisted" }[statusKey] || "s-pending";
+      const statusBadge = `<span class="status-badge ${statusClass}" style="font-size:10px;padding:2px 8px;">${s.status||"Pending"}</span>`;
       html += `
         <div class="rev-prev-item" style="cursor:pointer;" onclick="toggleDropSelection('${safeKey}')">
           <input type="checkbox" style="width:16px;height:16px;accent-color:var(--red);flex-shrink:0;cursor:pointer;"
             ${isDrop ? "checked" : ""} onchange="toggleDropSelection('${safeKey}')" onclick="event.stopPropagation()">
           <div style="flex:1;">
             <div class="rev-prev-name" style="${isDrop ? 'text-decoration:line-through;opacity:0.45;' : ''}">${s.tournament}</div>
-            <div class="rev-prev-meta">${s.month !== "Club Event" ? (MONTH_SHORTS_ALL[s.month]||s.month) + " &middot; " : ""}${s.date}</div>
+            <div class="rev-prev-meta" style="display:flex;align-items:center;gap:8px;margin-top:3px;">
+              <span>${s.month !== "Club Event" ? (MONTH_SHORTS_ALL[s.month]||s.month) + " &middot; " : ""}${s.date}</span>
+              ${statusBadge}
+            </div>
           </div>
           ${isDrop ? '<span style="font-size:11px;font-weight:700;font-family:Barlow Condensed,sans-serif;color:var(--red);letter-spacing:0.05em;white-space:nowrap;">Will be removed</span>' : '<span style="font-size:11px;color:#bbb;font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em;white-space:nowrap;">Keeping</span>'}
         </div>`;
