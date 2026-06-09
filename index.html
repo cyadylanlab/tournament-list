@@ -1090,25 +1090,51 @@ function closeForm() {
 
 // ── REVISION FLOW ─────────────────────────────────────────────────────────
 function startRevision() {
-  const email = prompt("Enter the email address you used for your original submission:");
-  if (email === null) return;
+  // Open modal instead of using browser prompt
+  document.getElementById("revision-overlay").classList.add("open");
+  document.getElementById("revision-email-input").value = "";
+  setTimeout(() => document.getElementById("revision-email-input").focus(), 150);
+}
+
+function closeRevisionModal() {
+  document.getElementById("revision-overlay").classList.remove("open");
+}
+
+function confirmRevision() {
+  const email = document.getElementById("revision-email-input").value.trim();
   if (!email || !email.includes("@")) { alert("Please enter a valid email address."); return; }
+
+  closeRevisionModal();
+
+  // Reset selections directly without triggering updatePanel hide logic
+  Object.keys(selectedMap).forEach(uid => {
+    document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
+    document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.remove("selected"));
+    const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
+    if (rowEl) rowEl.classList.remove("selected");
+  });
+  selectedMap = {};
+  selectionOrder = [];
+  renderSlots();
+
+  isRevision    = true;
+  revisionEmail = email;
+  panelExpanded = true;
 
   const panel = document.getElementById("sel-panel");
   panel.classList.remove("success-mode","form-mode");
-
-  clearAll();
-  isRevision  = true;
-  revisionEmail = email;
-
-  panel.classList.add("visible");
-  document.body.classList.add("panel-open");
+  panel.classList.add("visible","expanded");
+  document.body.classList.add("panel-open","panel-expanded");
+  document.getElementById("panel-toggle-label").textContent = "Collapse \u25bc";
   document.getElementById("panel-count-num").textContent = "0";
-  document.getElementById("panel-toggle-label").textContent = "Review & Submit \u25b2";
 
   const bEl = document.getElementById("panel-breakdown");
-  bEl.innerHTML = `<span style="color:var(--gold)">\u270f Revision mode &mdash; re-select your full updated tournament list</span>`;
+  bEl.innerHTML = `<span style="color:var(--gold)">\u270f Revision mode &mdash; re-select your full updated tournament list, then submit</span>`;
   bEl.style.display = "block";
+
+  // Render the empty selection list and scroll up so coach can start picking
+  renderSelectionList();
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 // ── CALENDAR STRIP ────────────────────────────────────────────────────────
@@ -1510,6 +1536,26 @@ renderSlots(); // show empty slots framework on load</script>
   </div>
 </div>
 
+
+<!-- REVISION EMAIL MODAL -->
+<div class="status-modal-overlay" id="revision-overlay" onclick="if(event.target===this)closeRevisionModal()">
+  <div class="status-modal">
+    <div class="status-modal-header">
+      <div class="status-modal-title">Revise / Modify My Selections</div>
+      <button class="status-modal-close" onclick="closeRevisionModal()">&times;</button>
+    </div>
+    <div class="status-lookup">
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Enter the email address you used when you originally submitted. This lets us match your revision to your existing record.</p>
+      <div class="status-lookup-row">
+        <input type="email" class="status-lookup-input" id="revision-email-input" placeholder="coach@email.com" onkeydown="if(event.key==='Enter')confirmRevision()">
+        <button class="status-lookup-btn" onclick="confirmRevision()">Start Revision</button>
+      </div>
+    </div>
+    <div style="padding:16px 24px 20px;">
+      <p style="font-size:12px;color:var(--muted2);line-height:1.6;">After confirming your email, the page will open in revision mode. Re-select your full updated tournament list and resubmit — your original record will be replaced with your new selections.</p>
+    </div>
+  </div>
+</div>
 
 <!-- APPLICATION STATUS MODAL -->
 <div class="status-modal-overlay" id="status-overlay" onclick="if(event.target===this)closeStatusModal()">
