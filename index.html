@@ -332,6 +332,7 @@
 
   /* PAGE PADDING when panel open */
   body.panel-open { padding-bottom: 68px; }
+  body.panel-form-active { padding-bottom: 75vh; }
 
 
   /* CLUB EVENTS SECTION */
@@ -561,6 +562,21 @@
     </div>
   </div>
 
+  <!-- SELECTION SLOTS -->
+  <div class="slots-bar" id="slots-bar">
+    <div class="slots-header">
+      <span class="slots-header-title">Your Selections</span>
+      <span class="slots-header-sub">Slots 1–5 included &nbsp;·&nbsp; Slot 3 = minimum &nbsp;·&nbsp; Slot 5 = max &nbsp;·&nbsp; 6+ invoiced</span>
+    </div>
+    <div class="slots-body">
+      <div class="slots-grid" id="slots-row"></div>
+      <div class="slots-right" id="slots-right">
+        <div class="slots-right-count" id="slots-right-count">0 / 5<div class="slots-right-label">Included</div></div>
+        <div class="slots-right-breakdown" id="slots-right-breakdown"></div>
+        <button class="slots-submit-btn" onclick="openForm()">Complete Submission →</button>
+      </div>
+    </div>
+  </div>
   <!-- CLUB EVENTS -->
   <div class="club-events-bar" id="club-events-section">
     <div class="club-events-header">
@@ -586,21 +602,6 @@
   </div>
 
 
-  <!-- SELECTION SLOTS -->
-  <div class="slots-bar" id="slots-bar">
-    <div class="slots-header">
-      <span class="slots-header-title">Your Selections</span>
-      <span class="slots-header-sub">Slots 1–5 included &nbsp;·&nbsp; Slot 3 = minimum &nbsp;·&nbsp; Slot 5 = max &nbsp;·&nbsp; 6+ invoiced</span>
-    </div>
-    <div class="slots-body">
-      <div class="slots-grid" id="slots-row"></div>
-      <div class="slots-right" id="slots-right">
-        <div class="slots-right-count" id="slots-right-count">0 / 5<div class="slots-right-label">Included</div></div>
-        <div class="slots-right-breakdown" id="slots-right-breakdown"></div>
-        <button class="slots-submit-btn" onclick="openForm()">Complete Submission →</button>
-      </div>
-    </div>
-  </div>
 
   <div class="table-wrap">
     <table>
@@ -1080,12 +1081,15 @@ function openForm() {
   panel.classList.remove("expanded");
   document.getElementById("revision-fields").style.display = isRevision ? "block" : "none";
   if (isRevision && revisionEmail) document.getElementById("f-email").value = revisionEmail;
+  document.body.classList.add("panel-form-active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function closeForm() {
   const panel = document.getElementById("sel-panel");
   panel.classList.remove("form-mode");
   panel.classList.add("expanded");
+  document.body.classList.remove("panel-form-active");
 }
 
 // ── REVISION FLOW ─────────────────────────────────────────────────────────
@@ -1365,6 +1369,7 @@ function showPanelSuccess() {
   const panel = document.getElementById("sel-panel");
   panel.classList.remove("form-mode","expanded");
   panel.classList.add("success-mode","visible");
+  document.body.classList.remove("panel-form-active");
   document.getElementById("panel-toggle-label").textContent = isRevision ? "Revision Submitted \u2713" : "Submitted \u2713";
 
   const bodyEl = document.getElementById("panel-success-body");
