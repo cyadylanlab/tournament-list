@@ -329,8 +329,7 @@
   .success-msg-body { font-size: 12px; color: #666; line-height: 1.6; max-width: 360px; }
 
   /* PAGE PADDING when panel open */
-  body.panel-open { padding-bottom: 64px; }
-  body.panel-expanded { padding-bottom: 52vh; }
+  body.panel-open { padding-bottom: 68px; }
 
 
   /* CLUB EVENTS SECTION */
@@ -1065,7 +1064,7 @@ function updatePanel() {
   const panel = document.getElementById("sel-panel");
   if (total === 0) {
     panel.classList.remove("visible","expanded");
-    document.body.classList.remove("panel-open","panel-expanded");
+    document.body.classList.remove("panel-open");
     panelExpanded = false;
   } else {
     panel.classList.add("visible");
@@ -1088,7 +1087,7 @@ function togglePanel() {
   if (panel.classList.contains("form-mode") || panel.classList.contains("success-mode")) return;
   panelExpanded = !panelExpanded;
   panel.classList.toggle("expanded", panelExpanded);
-  document.body.classList.toggle("panel-expanded", panelExpanded);
+
   document.getElementById("panel-toggle-label").textContent = panelExpanded ? "Collapse \u25bc" : "Review & Submit \u25b2";
 }
 
