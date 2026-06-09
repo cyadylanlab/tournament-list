@@ -1657,9 +1657,11 @@ renderSlots(); // show empty slots framework on load</script>
         <input type="email" id="f-email" placeholder="coach@email.com">
       </div>
     </div>
-    <div class="form-field full" id="revision-fields" style="display:none">
-        <label>What changed? Note any dropped or added tournaments</label>
-        <input type="text" id="f-rev-notes" placeholder="e.g. Dropping Virginia Cup, adding Jefferson Cup Girls Showcase">
+    <div id="revision-fields" style="display:none;padding:0 24px 12px;">
+        <div class="form-field full">
+          <label>What changed? Note any dropped or added tournaments</label>
+          <input type="text" id="f-rev-notes" placeholder="e.g. Dropping Virginia Cup, adding Jefferson Cup Girls Showcase">
+        </div>
       </div>
     <button class="form-send-btn" id="form-send-btn" onclick="submitSelections()">Send My Selections</button>
   </div>
