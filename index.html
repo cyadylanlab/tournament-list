@@ -1042,6 +1042,13 @@ function updatePanel() {
   } else {
     panel.classList.add("visible");
     document.body.classList.add("panel-open");
+    // Auto-expand on first selection
+    if (!panelExpanded) {
+      panelExpanded = true;
+      panel.classList.add("expanded");
+      document.body.classList.add("panel-expanded");
+      document.getElementById("panel-toggle-label").textContent = "Collapse ▼";
+    }
     renderCalendar();
     renderSelectionList();
   }
@@ -1409,7 +1416,7 @@ async function loadFromSheet() {
 }
 
 loadFromSheet();
-</script>
+renderSlots(); // show empty slots framework on load</script>
 
 <!-- BOTTOM SELECTION PANEL -->
 <div class="panel" id="sel-panel">
