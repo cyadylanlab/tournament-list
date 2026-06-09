@@ -451,13 +451,12 @@
   .slots-header-sub { font-size: 11px; color: #666; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.04em; }
   .slots-row {
     display: flex; gap: 8px; padding: 12px 14px;
-    overflow-x: auto; scrollbar-width: none; align-items: stretch;
+    align-items: stretch;
   }
-  .slots-row::-webkit-scrollbar { display: none; }
   .slot-card {
-    flex-shrink: 0; width: 155px; border-radius: 6px;
-    border: 1.5px dashed #ddd; padding: 8px 10px;
-    background: #fafafa; min-height: 72px;
+    flex: 1; min-width: 0; border-radius: 6px;
+    border: 1.5px dashed #ddd; padding: 10px 12px;
+    background: #fafafa; min-height: 80px;
     display: flex; flex-direction: column; justify-content: space-between;
     transition: all 0.2s;
   }
@@ -488,6 +487,9 @@
     margin-top: 4px;
   }
   .slot-empty-label { font-size: 11px; color: #bbb; font-style: italic; margin-top: 4px; }
+  .slot-detail { font-size: 10.5px; color: var(--muted2); font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.03em; margin-top: 3px; }
+  .slot-card.filled .slot-detail { color: #777; }
+  .slot-card.invoice-slot .slot-detail { color: #a16207; }
   .slot-remove-x {
     position: absolute; top: 5px; right: 7px; font-size: 11px; color: #ccc;
     cursor: pointer; line-height: 1; transition: color 0.15s;
@@ -495,7 +497,8 @@
   .slot-remove-x:hover { color: #ef4444; }
   .slot-card { position: relative; }
   @media (max-width: 700px) {
-    .slot-card { width: 130px; min-height: 64px; }
+    .slots-row { flex-wrap: wrap; }
+    .slot-card { flex: 1 1 calc(50% - 4px); min-height: 64px; }
   }
 
   /* RESPONSIVE */
@@ -1373,7 +1376,8 @@ function renderSlots() {
     const removeBtn = isFilled ? `<span class="slot-remove-x" onclick="removeSelection('${uid}')" title="Remove">&times;</span>` : "";
 
     const body = isFilled
-      ? `<div class="slot-name">${s.name}</div>`
+      ? `<div class="slot-name">${s.name}</div>
+         <div class="slot-detail">${s.date}${s.location ? " &middot; " + s.location : ""}</div>`
       : `<div class="slot-empty-label">${isInvoice ? "Additional" : "Open"}</div>`;
 
     html += `
