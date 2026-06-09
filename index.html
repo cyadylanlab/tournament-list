@@ -202,7 +202,9 @@
     max-height: 80vh; display: flex; flex-direction: column;
     font-family: 'Barlow', sans-serif;
   }
-  .panel.visible { transform: translateY(0); }
+  /* Panel only shows for form/success states — bottom bar is hidden */
+  .panel.visible:not(.form-mode):not(.success-mode) { display: none; }
+  .panel.form-mode, .panel.success-mode { transform: translateY(0); display: flex; }
   .panel-bar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 24px; cursor: pointer; flex-shrink: 0;
@@ -583,13 +585,6 @@
     </div>
   </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th class="col-select"></th><th>Date</th><th>Deadline</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Reimbursable</th><th>Considerations</th></tr></thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-  <div class="card-list" id="card-list"></div>
 
   <!-- SELECTION SLOTS -->
   <div class="slots-bar" id="slots-bar">
@@ -606,6 +601,15 @@
       </div>
     </div>
   </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th class="col-select"></th><th>Date</th><th>Deadline</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Reimbursable</th><th>Considerations</th></tr></thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+  <div class="card-list" id="card-list"></div>
+
 
   <div class="legend">
     <span class="legend-label">Legend:</span>
