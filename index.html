@@ -1182,19 +1182,19 @@ function renderPreviousSelectionsInModal(selections) {
   monthOrder.forEach(month => {
     if (!grouped[month]) return;
     html += `<div class="status-month-label">${month}</div>`;
-    grouped[month].forEach((s, i) => {
+    grouped[month].forEach((s) => {
       const key = s.tournament + "|" + s.date;
+      const safeKey = key.replace(/'/g,"\'");
       const isDrop = droppingUids.has(key);
       html += `
-        <div class="rev-prev-item" id="revitem-${btoa(key).replace(/=/g,'')}">
-          <div>
-            <div class="rev-prev-name" style="${isDrop ? 'text-decoration:line-through;opacity:0.5' : ''}">${s.tournament}</div>
+        <div class="rev-prev-item" style="cursor:pointer;" onclick="toggleDropSelection('${safeKey}')">
+          <input type="checkbox" style="width:16px;height:16px;accent-color:var(--red);flex-shrink:0;cursor:pointer;"
+            ${isDrop ? "checked" : ""} onchange="toggleDropSelection('${safeKey}')" onclick="event.stopPropagation()">
+          <div style="flex:1;">
+            <div class="rev-prev-name" style="${isDrop ? 'text-decoration:line-through;opacity:0.45;' : ''}">${s.tournament}</div>
             <div class="rev-prev-meta">${s.month !== "Club Event" ? (MONTH_SHORTS_ALL[s.month]||s.month) + " &middot; " : ""}${s.date}</div>
           </div>
-          <button class="rev-keep-btn ${isDrop ? 'dropping' : 'keeping'}"
-            onclick="toggleDropSelection('${key.replace(/'/g,"\'")}')">
-            ${isDrop ? "Removed — click to keep" : "Keeping &nbsp;✓"}
-          </button>
+          ${isDrop ? '<span style="font-size:11px;font-weight:700;font-family:Barlow Condensed,sans-serif;color:var(--red);letter-spacing:0.05em;white-space:nowrap;">Will be removed</span>' : '<span style="font-size:11px;color:#bbb;font-family:Barlow Condensed,sans-serif;letter-spacing:0.05em;white-space:nowrap;">Keeping</span>'}
         </div>`;
     });
   });
@@ -1695,11 +1695,12 @@ renderSlots(); // show empty slots framework on load</script>
     <!-- STEP 2: Previous selections list -->
     <div id="rev-step-2" style="display:none;">
       <div style="padding:14px 24px 10px;border-bottom:1px solid var(--border);">
-        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;">These are your current selections. Remove the ones you want to drop, then click <strong>Continue</strong> to browse the full list and add replacements.</p>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;">Check the box next to any tournament you want to <strong>remove or replace</strong>. Leave unchecked ones as-is. Then click <strong>Continue</strong> to browse the full list and add replacements.</p>
       </div>
       <div id="rev-prev-list" class="status-results" style="max-height:340px;"></div>
-      <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;">
+      <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <button onclick="backToRevEmail()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">← Back</button>
+        <button onclick="closeRevisionModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Cancel — No Changes</button>
         <button onclick="confirmRevision()" class="status-lookup-btn" style="flex:1;">Continue to Full List →</button>
       </div>
     </div>
