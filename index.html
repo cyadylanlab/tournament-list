@@ -182,6 +182,258 @@
   .card-arrow { font-size: 10px; color: var(--gold); flex-shrink: 0; transition: transform 0.2s; }
   .card-arrow.open { transform: rotate(180deg); }
 
+
+  /* ── CHECKBOX COLUMN ── */
+  .col-select { width: 40px; text-align: center; }
+  .t-select-check {
+    width: 17px; height: 17px; accent-color: var(--gold);
+    cursor: pointer; display: block; margin: 0 auto;
+  }
+  tbody tr.data-row.selected { background: rgba(166,124,0,0.06) !important; box-shadow: inset 3px 0 0 var(--gold); }
+  .card-check-wrap { position: absolute; top: 14px; right: 14px; }
+  .card-check-wrap input { width: 18px; height: 18px; accent-color: var(--gold); cursor: pointer; }
+  .card { position: relative; }
+
+  /* ── BOTTOM PANEL ── */
+  .panel {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+    background: #1a1a1a; border-top: 2px solid var(--gold);
+    transform: translateY(100%); transition: transform 0.3s ease;
+    max-height: 80vh; display: flex; flex-direction: column;
+    font-family: 'Barlow', sans-serif;
+  }
+  .panel.visible { transform: translateY(0); }
+  .panel-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 24px; cursor: pointer; flex-shrink: 0;
+    border-bottom: 1px solid #2a2a2a;
+  }
+  .panel-bar:hover { background: #222; }
+  .panel-count {
+    font-family: 'Bebas Neue', sans-serif; font-size: 16px;
+    letter-spacing: 0.12em; color: #fff;
+  }
+  .panel-count span { color: var(--gold); font-size: 22px; }
+  .panel-toggle-btn {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--gold); font-family: 'Barlow Condensed', sans-serif;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .panel-body { display: none; overflow-y: auto; flex: 1; }
+  .panel.expanded .panel-body { display: flex; flex-direction: column; }
+
+  /* CALENDAR STRIP */
+  .panel-calendar {
+    padding: 16px 24px 12px; border-bottom: 1px solid #2a2a2a; flex-shrink: 0;
+  }
+  .cal-label { font-size: 10px; letter-spacing: 0.14em; color: #555; text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; margin-bottom: 8px; }
+  .cal-months { display: flex; gap: 4px; flex-wrap: wrap; }
+  .cal-month {
+    font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 0.1em;
+    padding: 4px 8px; border-radius: 4px; border: 1px solid #333;
+    color: #555; transition: all 0.15s; position: relative;
+  }
+  .cal-month.has-selection { background: rgba(166,124,0,0.15); border-color: rgba(166,124,0,0.4); color: var(--gold); }
+  .cal-month .cal-dot {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 16px; height: 16px; border-radius: 50%; background: var(--gold);
+    color: #000; font-size: 9px; font-weight: 800; margin-left: 4px;
+    font-family: 'Barlow', sans-serif;
+  }
+
+  /* SELECTION LIST */
+  .panel-selections { padding: 12px 24px; flex: 1; }
+  .panel-sel-label { font-size: 10px; letter-spacing: 0.14em; color: #555; text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; margin-bottom: 10px; }
+  .sel-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 10px 0; border-bottom: 1px solid #252525;
+    flex-wrap: wrap;
+  }
+  .sel-item:last-child { border-bottom: none; }
+  .sel-remove {
+    color: #444; font-size: 16px; cursor: pointer; line-height: 1;
+    flex-shrink: 0; margin-top: 1px; transition: color 0.15s;
+  }
+  .sel-remove:hover { color: #ef4444; }
+  .sel-info { flex: 1; min-width: 180px; }
+  .sel-name { font-weight: 600; font-size: 13px; color: #e5e7eb; line-height: 1.3; }
+  .sel-meta { font-size: 11px; color: #555; margin-top: 2px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.03em; }
+  .sel-levels { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; }
+  .sel-level-btn {
+    font-size: 10px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.04em; padding: 3px 10px; border-radius: 12px; cursor: pointer;
+    border: 1px solid #333; background: transparent; color: #555;
+    transition: all 0.15s;
+  }
+  .sel-level-btn.active { background: var(--gold); color: #000; border-color: var(--gold); }
+  .sel-level-label { font-size: 10px; color: #444; letter-spacing: 0.06em; font-family: 'Barlow Condensed', sans-serif; }
+
+  /* PANEL FOOTER */
+  .panel-footer {
+    padding: 14px 24px; border-top: 1px solid #2a2a2a; flex-shrink: 0;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .panel-submit-btn {
+    background: var(--gold); color: #000; border: none; border-radius: 6px;
+    padding: 11px 28px; font-family: 'Bebas Neue', sans-serif; font-size: 16px;
+    letter-spacing: 0.1em; cursor: pointer; transition: background 0.15s; flex: 1;
+  }
+  .panel-submit-btn:hover { background: #8a6800; }
+  .panel-clear-btn {
+    background: transparent; color: #555; border: 1px solid #333; border-radius: 6px;
+    padding: 11px 16px; font-size: 11px; font-weight: 700; cursor: pointer;
+    font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em;
+    transition: all 0.15s;
+  }
+  .panel-clear-btn:hover { color: #ef4444; border-color: #ef4444; }
+
+  /* COACH FORM */
+  .panel-form { display: none; flex-direction: column; overflow-y: auto; flex: 1; }
+  .panel.form-mode .panel-body { display: none; }
+  .panel.form-mode .panel-form { display: flex; }
+  .form-header { padding: 14px 24px; border-bottom: 1px solid #2a2a2a; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+  .form-header-title { font-family: 'Bebas Neue', sans-serif; font-size: 16px; letter-spacing: 0.1em; color: #fff; }
+  .form-back { font-size: 11px; color: #555; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; transition: color 0.15s; }
+  .form-back:hover { color: var(--gold); }
+  .form-fields { padding: 16px 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; overflow-y: auto; flex: 1; }
+  .form-field { display: flex; flex-direction: column; gap: 5px; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; color: #555; text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; }
+  .form-field input, .form-field select {
+    background: #222; border: 1px solid #333; border-radius: 5px;
+    color: #e5e7eb; padding: 8px 10px; font-family: 'Barlow', sans-serif; font-size: 13px;
+    outline: none; transition: border-color 0.15s;
+    appearance: none; -webkit-appearance: none;
+  }
+  .form-field input:focus, .form-field select:focus { border-color: var(--gold); }
+  .form-field input::placeholder { color: #444; }
+  .form-field select option { background: #222; }
+  .form-send-btn {
+    margin: 0 24px 16px; background: var(--gold); color: #000; border: none;
+    border-radius: 6px; padding: 12px; font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px; letter-spacing: 0.1em; cursor: pointer; transition: background 0.15s;
+    flex-shrink: 0;
+  }
+  .form-send-btn:hover { background: #8a6800; }
+  .form-send-btn:disabled { background: #444; color: #666; cursor: not-allowed; }
+
+  /* PANEL SUCCESS */
+  .panel-success { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 32px 24px; text-align: center; }
+  .panel.success-mode .panel-body { display: none; }
+  .panel.success-mode .panel-form { display: none; }
+  .panel.success-mode .panel-success { display: flex; }
+  .panel.success-mode .panel-bar { cursor: default; }
+  .success-checkmark { font-size: 36px; color: var(--gold); margin-bottom: 10px; }
+  .success-msg-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.08em; color: #fff; margin-bottom: 6px; }
+  .success-msg-body { font-size: 12px; color: #666; line-height: 1.6; max-width: 360px; }
+
+  /* PAGE PADDING when panel open */
+  body.panel-open { padding-bottom: 64px; }
+  body.panel-expanded { padding-bottom: 50vh; }
+
+
+  /* CLUB EVENTS SECTION */
+  .club-events-bar {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .club-events-header {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px; background: #1a1a1a;
+  }
+  .club-events-title {
+    font-family: "Bebas Neue", sans-serif; font-size: 13px;
+    letter-spacing: 0.12em; color: var(--gold);
+  }
+  .club-events-note { font-size: 10px; color: #555; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.06em; }
+  .club-event-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-top: 1px solid #f0f0f0; transition: background 0.12s;
+  }
+  .club-event-row:first-child { border-top: none; }
+  .club-event-row:hover { background: var(--gold-bg); }
+  .club-event-row.selected { background: rgba(166,124,0,0.06); box-shadow: inset 3px 0 0 var(--gold); }
+  .club-event-name { font-weight: 700; font-size: 13.5px; color: var(--text); }
+  .club-event-meta { font-size: 12px; color: var(--muted2); font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.03em; }
+  .club-event-badge { background: rgba(29,78,216,0.08); color: #1d4ed8; border: 1px solid rgba(29,78,216,0.25); border-radius: 4px; padding: 2px 8px; font-size: 10px; font-weight: 700; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.04em; }
+
+  /* PANEL BREAKDOWN */
+  .panel-breakdown { font-size: 11px; margin-top: 3px; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.04em; }
+
+  /* INCLUDED / INVOICE BADGES */
+  .badge-included { background: rgba(34,197,94,0.12); color: #22c55e; border: 1px solid rgba(34,197,94,0.2); border-radius: 3px; padding: 1px 6px; font-size: 9px; font-weight: 700; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.06em; }
+  .badge-invoice { background: rgba(245,158,11,0.12); color: #f59e0b; border: 1px solid rgba(245,158,11,0.2); border-radius: 3px; padding: 1px 6px; font-size: 9px; font-weight: 700; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.06em; }
+
+  /* REVISE BUTTON */
+  .revise-btn {
+    margin-top: 14px; background: transparent; border: 1px solid #333; color: #888;
+    border-radius: 6px; padding: 8px 20px; font-family: "Barlow Condensed", sans-serif;
+    font-size: 13px; font-weight: 700; letter-spacing: 0.08em; cursor: pointer; transition: all 0.15s;
+  }
+  .revise-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+
+  /* STATUS MODAL */
+  .status-modal-overlay {
+    display: none; position: fixed; inset: 0; z-index: 400;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);
+    align-items: center; justify-content: center;
+  }
+  .status-modal-overlay.open { display: flex; }
+  .status-modal {
+    background: #fff; border-radius: 10px; width: 90%; max-width: 680px;
+    max-height: 85vh; display: flex; flex-direction: column;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden;
+  }
+  .status-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px; border-bottom: 2px solid var(--border); flex-shrink: 0;
+  }
+  .status-modal-title { font-family: "Bebas Neue", sans-serif; font-size: 20px; letter-spacing: 0.08em; color: #111; }
+  .status-modal-close { font-size: 20px; color: #aaa; cursor: pointer; line-height: 1; background: none; border: none; transition: color 0.15s; }
+  .status-modal-close:hover { color: #111; }
+  .status-lookup { padding: 20px 24px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .status-lookup-row { display: flex; gap: 10px; }
+  .status-lookup-input {
+    flex: 1; padding: 10px 14px; border: 1px solid var(--border); border-radius: 6px;
+    font-family: "Barlow", sans-serif; font-size: 14px; color: var(--text);
+    outline: none; transition: border-color 0.15s; background: var(--bg3);
+  }
+  .status-lookup-input:focus { border-color: var(--gold); background: #fff; }
+  .status-lookup-btn {
+    background: var(--gold); color: #fff; border: none; border-radius: 6px;
+    padding: 10px 20px; font-family: "Bebas Neue", sans-serif; font-size: 16px;
+    letter-spacing: 0.1em; cursor: pointer; white-space: nowrap; transition: background 0.15s;
+  }
+  .status-lookup-btn:hover { background: #8a6800; }
+  .status-results { overflow-y: auto; flex: 1; padding: 16px 24px; }
+  .status-empty { text-align: center; color: #aaa; padding: 40px 20px; font-size: 13px; }
+  .status-team-header { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; color: var(--muted2); text-transform: uppercase; margin-bottom: 12px; font-family: "Barlow Condensed", sans-serif; }
+  .status-month-label { font-size: 10px; font-weight: 700; letter-spacing: 0.14em; color: var(--muted2); text-transform: uppercase; padding: 8px 0 4px; font-family: "Barlow Condensed", sans-serif; border-top: 1px solid var(--border); margin-top: 4px; }
+  .status-month-label:first-child { border-top: none; margin-top: 0; }
+  .status-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid #f5f5f5; gap: 12px; flex-wrap: wrap; }
+  .status-item:last-child { border-bottom: none; }
+  .status-tournament-name { font-size: 13px; font-weight: 600; color: var(--text); flex: 1; }
+  .status-date { font-size: 11px; color: var(--muted2); font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.03em; }
+  .status-badge {
+    font-size: 11px; font-weight: 700; font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.05em; padding: 3px 10px; border-radius: 4px; white-space: nowrap;
+  }
+  .s-pending    { background: #f3f4f6; color: #6b7280; border: 1px solid #e5e7eb; }
+  .s-applied    { background: rgba(29,78,216,0.08); color: #1d4ed8; border: 1px solid rgba(29,78,216,0.25); }
+  .s-accepted   { background: rgba(22,101,52,0.08); color: #166534; border: 1px solid rgba(22,101,52,0.25); }
+  .s-declined   { background: rgba(153,27,27,0.08); color: #991b1b; border: 1px solid rgba(153,27,27,0.25); }
+  .s-waitlisted { background: rgba(146,64,14,0.08); color: #92400e; border: 1px solid rgba(146,64,14,0.25); }
+  .status-notes { font-size: 11px; color: var(--muted2); width: 100%; padding-left: 0; font-style: italic; }
+
+  /* STATUS BUTTON IN HEADER */
+  .status-header-btn {
+    font-size: 11px; font-weight: 700; font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.08em; color: var(--muted2); cursor: pointer; background: none; border: none;
+    padding: 0; transition: color 0.15s; text-decoration: underline; text-underline-offset: 3px;
+  }
+  .status-header-btn:hover { color: var(--gold); }
+
   /* RESPONSIVE */
   @media (max-width: 700px) {
     .header { padding: 20px 16px 16px; }
@@ -214,6 +466,9 @@
         <span class="season">2026–27 SEASON</span>
       </div>
       <h1>Tournament Guidance List</h1>
+    <div style="margin-top:8px;">
+      <button class="status-header-btn" onclick="openStatusModal()">Check My Application Status</button>
+    </div>
     </div>
     <div class="stats">
       <div class="stat"><div class="stat-val" id="total-count">—</div><div class="stat-label">Total Events</div></div>
@@ -240,9 +495,34 @@
       <button class="filter-btn" data-filter="not-recommended" onclick="setFilter('not-recommended')">! Consider Carefully</button>
     </div>
   </div>
+
+  <!-- CLUB EVENTS -->
+  <div class="club-events-bar" id="club-events-section">
+    <div class="club-events-header">
+      <span class="club-events-title">Club Events</span>
+      <span class="club-events-note">Always available · Count toward your 5 included tournaments</span>
+    </div>
+    <div class="club-event-row" id="club-row-presidents-cup">
+      <input type="checkbox" class="t-select-check" id="chk-club-presidents-cup" data-uid="club-presidents-cup" data-name="Presidents Cup" data-date="TBD" data-month="Club Event" data-location="TBD" onchange="onClubCheck(this)">
+      <div style="flex:1">
+        <div class="club-event-name">Presidents Cup</div>
+        <div class="club-event-meta">TBD &nbsp;·&nbsp; Boys &amp; Girls</div>
+      </div>
+      <span class="club-event-badge">Club Coordinated</span>
+    </div>
+    <div class="club-event-row" id="club-row-state-cup">
+      <input type="checkbox" class="t-select-check" id="chk-club-state-cup" data-uid="club-state-cup" data-name="State Cup" data-date="TBD" data-month="Club Event" data-location="TBD" onchange="onClubCheck(this)">
+      <div style="flex:1">
+        <div class="club-event-name">State Cup</div>
+        <div class="club-event-meta">TBD &nbsp;·&nbsp; Boys &amp; Girls</div>
+      </div>
+      <span class="club-event-badge">Club Coordinated</span>
+    </div>
+  </div>
+
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Date</th><th>Deadline</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Reimbursable</th><th>Considerations</th></tr></thead>
+      <thead><tr><th class="col-select"></th><th>Date</th><th>Deadline</th><th>Tournament</th><th>Location</th><th>Competition Level</th><th>Reimbursable</th><th>Considerations</th></tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
@@ -503,17 +783,20 @@ function renderMonth() {
     const arrowHtml = hasNotes ? `<span class="expand-arrow" id="arrow-${i}">▼</span>` : "";
     const clickAttr = hasNotes ? `onclick="toggleNotes(${i})"` : "";
     const detailsHint = hasNotes ? `<div class="details-hint">Click row for details</div>` : "";
+    const uid = `${activeMonth}-${i}`;
+    const isSelected = selectedMap[uid] !== undefined;
     return `
-      <tr class="data-row${evenCls}${notesCls}" ${clickAttr}>
-        <td class="td-date">${t.date}</td>
-        <td class="td-deadline">${(t.deadline||m.deadline) ? `<span class="deadline-badge">${t.deadline||m.deadline}</span>` : '<span style="color:#ccc">—</span>'}</td>
-        <td><div class="td-name">${t.name}${arrowHtml}</div></td>
-        <td class="td-location">${t.location}</td>
-        <td class="td-levels"><div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div></td>
-        <td>${t.reimbursable === 'yes' ? '<span class="reimb-yes">✓ Eligible</span>' : t.reimbursable === 'no' ? '<span class="reimb-no">✗ Not Eligible</span>' : '<span style="color:#ccc">—</span>'}</td>
-        <td>${statusHtml}${detailsHint}</td>
+      <tr class="data-row${evenCls}${notesCls}${isSelected ? ' selected' : ''}" id="datarow-${uid}">
+        <td class="col-select"><input type="checkbox" class="t-select-check" id="selchk-${uid}" data-uid="${uid}" data-name="${t.name.replace(/"/g,'&quot;')}" data-date="${t.date}" data-month="${m.label}" data-location="${t.location}" ${isSelected ? 'checked' : ''} onchange="onRowCheck(this)"></td>
+        <td class="td-date" ${clickAttr}>${t.date}</td>
+        <td class="td-deadline" ${clickAttr}>${(t.deadline||m.deadline) ? `<span class="deadline-badge">${t.deadline||m.deadline}</span>` : '<span style="color:#ccc">—</span>'}</td>
+        <td ${clickAttr}><div class="td-name">${t.name}${arrowHtml}</div></td>
+        <td class="td-location" ${clickAttr}>${t.location}</td>
+        <td class="td-levels" ${clickAttr}><div class="levels-wrap">${t.levels.map(levelBadge).join("")}</div></td>
+        <td ${clickAttr}>${t.reimbursable === 'yes' ? '<span class="reimb-yes">✓ Eligible</span>' : t.reimbursable === 'no' ? '<span class="reimb-no">✗ Not Eligible</span>' : '<span style="color:#ccc">—</span>'}</td>
+        <td ${clickAttr}>${statusHtml}${detailsHint}</td>
       </tr>
-      ${hasNotes ? `<tr class="notes-row hidden" id="note-${i}"><td colspan="5"><div class="notes-content">${t.notes}</div></td></tr>` : ""}`;
+      ${hasNotes ? `<tr class="notes-row hidden" id="note-${i}"><td colspan="8"><div class="notes-content">${t.notes}</div></td></tr>` : ""}`;
   }).join("");
 
   cardList.innerHTML = filtered.map((t,i) => {
@@ -522,10 +805,15 @@ function renderMonth() {
     const statusHtml = t.status === "neutral"
       ? `<span class="status-neutral" style="font-size:12px;">—</span>`
       : `<span class="status-badge ${sm.cls}">${sm.icon} ${sm.label}</span>`;
+    const uid = `${activeMonth}-${i}`;
+    const isSelected = selectedMap[uid] !== undefined;
     return `
-      <div class="card${hasNotes?' has-notes':''}" ${hasNotes?`onclick="toggleCard(${i})"`:''}> 
-        <div class="card-top">
-          <div class="card-name">${t.name}</div>
+      <div class="card${hasNotes?' has-notes':''}${isSelected?' selected':''}" id="mcard-${uid}">
+        <div class="card-check-wrap">
+          <input type="checkbox" id="mselchk-${uid}" data-uid="${uid}" data-name="${t.name.replace(/"/g,'&quot;')}" data-date="${t.date}" data-month="${m.label}" data-location="${t.location}" ${isSelected?'checked':''} onchange="onRowCheck(this)">
+        </div>
+        <div class="card-top" ${hasNotes?`onclick="toggleCard(${i})"`:''}>
+          <div class="card-name" style="padding-right:28px">${t.name}</div>
           ${hasNotes ? `<span class="card-arrow" id="carrow-${i}">▼</span>` : ""}
         </div>
         <div class="card-meta">
@@ -564,6 +852,418 @@ function toggleCard(i) {
   if (arrow) arrow.classList.toggle("open");
 }
 
+
+// ── APPS SCRIPT URL ───────────────────────────────────────────────────────
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyqbnDGvnWTodw8yg3Ho862bP4kTMAbCqP6oO1VlBr2iYyeu82MB92OQ51H_KxFH3bYUA/exec";
+
+// ── CONFIG ────────────────────────────────────────────────────────────────
+const INCLUDED_MAX = 5;
+
+// ── CLUB EVENTS ───────────────────────────────────────────────────────────
+const CLUB_EVENT_IDS = ["club-presidents-cup","club-state-cup"];
+
+// ── SELECTION STATE ───────────────────────────────────────────────────────
+let selectedMap   = {};   // uid → { name, date, month, location, level }
+let selectionOrder = [];  // UIDs in order checked — first 5 = included
+let isRevision    = false;
+let revisionEmail = "";
+
+const MONTH_SHORTS_ALL = {
+  "August 2026":"AUG","September 2026":"SEP","October 2026":"OCT",
+  "November 2026":"NOV","December 2026":"DEC","January 2027":"JAN",
+  "February 2027":"FEB","March 2027":"MAR","April 2027":"APR",
+  "May 2027":"MAY","June 2027":"JUN","July 2027":"JUL",
+  "Club Event":"CLUB"
+};
+
+// ── CHECK HANDLERS ────────────────────────────────────────────────────────
+function onRowCheck(chk) {
+  const { uid, name, date, month, location } = chk.dataset;
+  if (chk.checked) {
+    if (!selectedMap[uid]) {
+      selectedMap[uid] = { name, date, month, location, level: null };
+      selectionOrder.push(uid);
+    }
+    document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = true);
+    document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.add("selected"));
+  } else {
+    delete selectedMap[uid];
+    selectionOrder = selectionOrder.filter(u => u !== uid);
+    document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
+    document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.remove("selected"));
+  }
+  updatePanel();
+}
+
+function onClubCheck(chk) {
+  const { uid, name, date, month, location } = chk.dataset;
+  const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
+  if (chk.checked) {
+    if (!selectedMap[uid]) {
+      selectedMap[uid] = { name, date, month, location, level: null };
+      selectionOrder.push(uid);
+    }
+    document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = true);
+    if (rowEl) rowEl.classList.add("selected");
+  } else {
+    delete selectedMap[uid];
+    selectionOrder = selectionOrder.filter(u => u !== uid);
+    document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
+    if (rowEl) rowEl.classList.remove("selected");
+  }
+  updatePanel();
+}
+
+function setLevel(uid, level) {
+  if (selectedMap[uid]) { selectedMap[uid].level = level; renderSelectionList(); }
+}
+
+function removeSelection(uid) {
+  delete selectedMap[uid];
+  selectionOrder = selectionOrder.filter(u => u !== uid);
+  document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
+  document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.remove("selected"));
+  const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
+  if (rowEl) rowEl.classList.remove("selected");
+  updatePanel();
+}
+
+function clearAll() {
+  selectionOrder.forEach(uid => {
+    document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
+    document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.remove("selected"));
+    const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
+    if (rowEl) rowEl.classList.remove("selected");
+  });
+  selectedMap = {}; selectionOrder = [];
+  updatePanel();
+}
+
+// ── PANEL CONTROL ─────────────────────────────────────────────────────────
+let panelExpanded = false;
+
+function updatePanel() {
+  const total     = selectionOrder.length;
+  const included  = Math.min(total, INCLUDED_MAX);
+  const additional = Math.max(0, total - INCLUDED_MAX);
+
+  document.getElementById("panel-count-num").textContent = total;
+
+  const bEl = document.getElementById("panel-breakdown");
+  if (total === 0) {
+    bEl.style.display = "none";
+  } else if (additional > 0) {
+    bEl.innerHTML = `<span style="color:#22c55e">&#10003; ${included} Included</span> &nbsp;&middot;&nbsp; <span style="color:#f59e0b">&#9888; ${additional} Additional &mdash; families will be invoiced</span>`;
+    bEl.style.display = "block";
+  } else {
+    bEl.innerHTML = `<span style="color:#555">${included} / ${INCLUDED_MAX} included slots used</span>`;
+    bEl.style.display = "block";
+  }
+
+  const panel = document.getElementById("sel-panel");
+  if (total === 0) {
+    panel.classList.remove("visible","expanded");
+    document.body.classList.remove("panel-open","panel-expanded");
+    panelExpanded = false;
+  } else {
+    panel.classList.add("visible");
+    document.body.classList.add("panel-open");
+    renderCalendar();
+    renderSelectionList();
+  }
+}
+
+function togglePanel() {
+  const panel = document.getElementById("sel-panel");
+  if (panel.classList.contains("form-mode") || panel.classList.contains("success-mode")) return;
+  panelExpanded = !panelExpanded;
+  panel.classList.toggle("expanded", panelExpanded);
+  document.body.classList.toggle("panel-expanded", panelExpanded);
+  document.getElementById("panel-toggle-label").textContent = panelExpanded ? "Collapse \u25bc" : "Review & Submit \u25b2";
+}
+
+function openForm() {
+  const panel = document.getElementById("sel-panel");
+  panel.classList.add("form-mode");
+  panel.classList.remove("expanded");
+  document.getElementById("revision-fields").style.display = isRevision ? "contents" : "none";
+  if (isRevision && revisionEmail) document.getElementById("f-email").value = revisionEmail;
+}
+
+function closeForm() {
+  const panel = document.getElementById("sel-panel");
+  panel.classList.remove("form-mode");
+  panel.classList.add("expanded");
+}
+
+// ── REVISION FLOW ─────────────────────────────────────────────────────────
+function startRevision() {
+  const email = prompt("Enter the email address you used for your original submission:");
+  if (email === null) return;
+  if (!email || !email.includes("@")) { alert("Please enter a valid email address."); return; }
+
+  const panel = document.getElementById("sel-panel");
+  panel.classList.remove("success-mode","form-mode");
+
+  clearAll();
+  isRevision  = true;
+  revisionEmail = email;
+
+  panel.classList.add("visible");
+  document.body.classList.add("panel-open");
+  document.getElementById("panel-count-num").textContent = "0";
+  document.getElementById("panel-toggle-label").textContent = "Review & Submit \u25b2";
+
+  const bEl = document.getElementById("panel-breakdown");
+  bEl.innerHTML = `<span style="color:var(--gold)">\u270f Revision mode &mdash; re-select your full updated tournament list</span>`;
+  bEl.style.display = "block";
+}
+
+// ── CALENDAR STRIP ────────────────────────────────────────────────────────
+function renderCalendar() {
+  const counts = {};
+  Object.values(selectedMap).forEach(s => { counts[s.month] = (counts[s.month] || 0) + 1; });
+  document.getElementById("cal-months").innerHTML = MONTH_ORDER.map(m => {
+    const short = MONTH_SHORTS_ALL[m] || m.slice(0,3).toUpperCase();
+    const n = counts[m] || 0;
+    return `<div class="cal-month${n > 0 ? " has-selection" : ""}">${short}${n > 0 ? `<span class="cal-dot">${n}</span>` : ""}</div>`;
+  }).join("");
+}
+
+// ── SELECTION LIST ────────────────────────────────────────────────────────
+function renderSelectionList() {
+  const el = document.getElementById("sel-list");
+  if (selectionOrder.length === 0) {
+    el.innerHTML = '<div style="color:#444;font-size:12px;padding:8px 0">No tournaments selected yet.</div>';
+    return;
+  }
+  el.innerHTML = selectionOrder.map((uid, idx) => {
+    const s = selectedMap[uid];
+    if (!s) return "";
+    const isIncluded = idx < INCLUDED_MAX;
+    const badge = isIncluded
+      ? `<span class="badge-included">INCLUDED</span>`
+      : `<span class="badge-invoice">INVOICE</span>`;
+    const levels = ["Most Competitive","Competitive","Least Competitive"];
+    const btns   = levels.map(lv => `<button class="sel-level-btn${s.level === lv ? " active" : ""}" onclick="setLevel('${uid}','${lv}')">${lv}</button>`).join("");
+    const monthDisplay = s.month === "Club Event" ? "Club Event" : (MONTH_SHORTS_ALL[s.month] || s.month);
+    return `
+      <div class="sel-item">
+        <span class="sel-remove" onclick="removeSelection('${uid}')" title="Remove">&times;</span>
+        <div class="sel-info">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px;">${badge} <div class="sel-name">${s.name}</div></div>
+          <div class="sel-meta">${monthDisplay} &middot; ${s.date} &middot; ${s.location}</div>
+        </div>
+        <div>
+          <div class="sel-level-label" style="margin-bottom:4px">Entry Level:</div>
+          <div class="sel-levels">${btns}</div>
+        </div>
+      </div>`;
+  }).join("");
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────────────
+async function submitSelections() {
+  const coach    = document.getElementById("f-coach").value.trim();
+  const team     = document.getElementById("f-team").value.trim();
+  const age      = document.getElementById("f-age").value;
+  const gender   = document.getElementById("f-gender").value;
+  const level    = document.getElementById("f-level").value;
+  const email    = document.getElementById("f-email").value.trim();
+  const revNotes = document.getElementById("f-rev-notes") ? document.getElementById("f-rev-notes").value.trim() : "";
+
+  if (!coach || !team || !age || !gender || !level || !email) { alert("Please fill in all fields before submitting."); return; }
+  if (!email.includes("@")) { alert("Please enter a valid email address."); return; }
+  if (selectionOrder.length === 0) { alert("Please select at least one tournament."); return; }
+
+  const includedUids    = selectionOrder.slice(0, INCLUDED_MAX);
+  const additionalUids  = selectionOrder.slice(INCLUDED_MAX);
+  const makeObj = uid => {
+    const s = selectedMap[uid];
+    return { tournament: s.name, month: s.month, date: s.date, location: s.location, entryLevel: s.level || "Not specified" };
+  };
+
+  const payload = {
+    timestamp:          new Date().toISOString(),
+    submissionType:     isRevision ? "Revision" : "Initial",
+    revisionNotes:      revNotes,
+    coachName:          coach,
+    teamDesignation:    team,
+    ageGroup:           age,
+    gender,
+    competitionLevel:   level,
+    email,
+    totalSelected:      selectionOrder.length,
+    includedCount:      includedUids.length,
+    additionalCount:    additionalUids.length,
+    includedSelections: includedUids.map(makeObj),
+    additionalSelections: additionalUids.map(makeObj)
+  };
+
+  const btn = document.getElementById("form-send-btn");
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+
+  if (!APPS_SCRIPT_URL) { showPanelSuccess(); return; }
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload), mode: "no-cors"
+    });
+    showPanelSuccess();
+  } catch(e) {
+    alert("Something went wrong. Please try again or contact Dylan.");
+    btn.disabled = false;
+    btn.textContent = "Send My Selections";
+  }
+}
+
+function showPanelSuccess() {
+  const panel = document.getElementById("sel-panel");
+  panel.classList.remove("form-mode","expanded");
+  panel.classList.add("success-mode","visible");
+  document.getElementById("panel-toggle-label").textContent = isRevision ? "Revision Submitted \u2713" : "Submitted \u2713";
+
+  const bodyEl = document.getElementById("panel-success-body");
+  if (bodyEl) bodyEl.textContent = isRevision
+    ? "Your revised selections have been received and your confirmation email has been updated. Club staff will review the changes."
+    : "Your tournament selections have been received and a confirmation has been sent to your email. Club staff will be in touch if there are any questions.";
+
+  isRevision    = false;
+  revisionEmail = "";
+}
+
+
+
+// ── STATUS CHECK ──────────────────────────────────────────────────────────
+// After deploying the Apps Script and getting the first submission,
+// publish the "Application Status" tab as CSV and paste the URL below.
+const STATUS_CSV_URL = ""; // ← paste Application Status tab CSV URL here
+
+const STATUS_MONTH_ORDER = ["August 2026","September 2026","October 2026","November 2026","December 2026","January 2027","February 2027","March 2027","April 2027","May 2027","June 2027","July 2027","Club Event"];
+
+function openStatusModal() {
+  document.getElementById("status-overlay").classList.add("open");
+  setTimeout(() => document.getElementById("status-email-input").focus(), 100);
+}
+
+function closeStatusModal() {
+  document.getElementById("status-overlay").classList.remove("open");
+}
+
+async function fetchStatus() {
+  const email = document.getElementById("status-email-input").value.trim().toLowerCase();
+  if (!email || !email.includes("@")) { alert("Please enter a valid email address."); return; }
+  if (!STATUS_CSV_URL) {
+    document.getElementById("status-results").innerHTML = '<div class="status-empty">Status checking is not yet active. Please check back later or contact club staff.</div>';
+    return;
+  }
+
+  const resultsEl = document.getElementById("status-results");
+  resultsEl.innerHTML = '<div class="status-empty">Loading...</div>';
+
+  try {
+    const res  = await fetch(STATUS_CSV_URL);
+    const text = await res.text();
+    const rows = parseStatusCSV(text);
+    const mine = rows.filter(r => (r.email||"").toLowerCase() === email);
+
+    if (mine.length === 0) {
+      resultsEl.innerHTML = '<div class="status-empty">No submissions found for this email address. Make sure you are using the same email you submitted with, or contact club staff.</div>';
+      return;
+    }
+
+    // Group by month
+    const grouped = {};
+    mine.forEach(r => {
+      const m = r.month || "Other";
+      if (!grouped[m]) grouped[m] = [];
+      grouped[m].push(r);
+    });
+
+    const teamName = mine[0].team || "";
+    const coachName = mine[0].coachName || "";
+
+    let html = `<div class="status-team-header">${coachName} &nbsp;&middot;&nbsp; ${teamName}</div>`;
+
+    STATUS_MONTH_ORDER.forEach(month => {
+      if (!grouped[month]) return;
+      html += `<div class="status-month-label">${month}</div>`;
+      grouped[month].forEach(r => {
+        const statusKey = (r.status || "Pending").toLowerCase().replace(/\s+/g, "-");
+        const statusClass = {
+          "pending":"s-pending","applied":"s-applied","accepted":"s-accepted",
+          "declined":"s-declined","waitlisted":"s-waitlisted"
+        }[statusKey] || "s-pending";
+        const notesHtml = r.notes ? `<div class="status-notes">${r.notes}</div>` : "";
+        html += `
+          <div class="status-item">
+            <div>
+              <div class="status-tournament-name">${r.tournament}</div>
+              <div class="status-date">${r.date}</div>
+              ${notesHtml}
+            </div>
+            <span class="status-badge ${statusClass}">${r.status || "Pending"}</span>
+          </div>`;
+      });
+    });
+
+    // Anything not in month order
+    Object.keys(grouped).forEach(month => {
+      if (!STATUS_MONTH_ORDER.includes(month)) {
+        html += `<div class="status-month-label">${month}</div>`;
+        grouped[month].forEach(r => {
+          const statusClass = {
+            "pending":"s-pending","applied":"s-applied","accepted":"s-accepted",
+            "declined":"s-declined","waitlisted":"s-waitlisted"
+          }[(r.status||"").toLowerCase().replace(/\s+/g,"-")] || "s-pending";
+          html += `<div class="status-item"><div class="status-tournament-name">${r.tournament}</div><span class="status-badge ${statusClass}">${r.status||"Pending"}</span></div>`;
+        });
+      }
+    });
+
+    resultsEl.innerHTML = html;
+  } catch(e) {
+    resultsEl.innerHTML = '<div class="status-empty">Could not load status data. Please try again or contact club staff.</div>';
+  }
+}
+
+function parseStatusCSV(text) {
+  // Columns: Email, Coach Name, Team Designation, Tournament, Month, Date, Status, Beth Notes, Last Updated
+  const rows = [];
+  let row = [], field = "", inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], next = text[i+1];
+    if (inQuote) {
+      if (c === '"' && next === '"') { field += '"'; i++; }
+      else if (c === '"') inQuote = false;
+      else field += c;
+    } else {
+      if (c === '"') inQuote = true;
+      else if (c === ',') { row.push(field); field = ""; }
+      else if (c === '\n' || (c === '\r' && next === '\n')) {
+        row.push(field); field = "";
+        if (row.some(f => f)) rows.push(row);
+        row = []; if (c === '\r') i++;
+      } else field += c;
+    }
+  }
+  if (field || row.length) { row.push(field); if (row.some(f => f)) rows.push(row); }
+
+  return rows.slice(1).map(r => ({
+    email:      r[0] || "",
+    coachName:  r[1] || "",
+    team:       r[2] || "",
+    tournament: r[3] || "",
+    month:      r[4] || "",
+    date:       r[5] || "",
+    status:     r[6] || "Pending",
+    notes:      r[7] || ""
+  }));
+}
+
+
 // ── LIVE SHEET FETCH ──────────────────────────────────────────────────────
 async function loadFromSheet() {
   // Always render fallback data immediately
@@ -591,5 +1291,115 @@ async function loadFromSheet() {
 
 loadFromSheet();
 </script>
+
+<!-- BOTTOM SELECTION PANEL -->
+<div class="panel" id="sel-panel">
+  <div class="panel-bar" onclick="togglePanel()">
+    <div>
+      <div class="panel-count"><span id="panel-count-num">0</span> Tournaments Selected</div>
+      <div class="panel-breakdown" id="panel-breakdown" style="display:none"></div>
+    </div>
+    <div class="panel-toggle-btn" id="panel-toggle-label">Review &amp; Submit ▲</div>
+  </div>
+  <div class="panel-body">
+    <div class="panel-calendar">
+      <div class="cal-label">Your Season at a Glance</div>
+      <div class="cal-months" id="cal-months"></div>
+    </div>
+    <div class="panel-selections">
+      <div class="panel-sel-label">Selected Tournaments — choose your entry level for each</div>
+      <div id="sel-list"></div>
+    </div>
+    <div class="panel-footer">
+      <button class="panel-clear-btn" onclick="clearAll()">Clear All</button>
+      <button class="panel-submit-btn" onclick="openForm()">Complete Submission →</button>
+    </div>
+  </div>
+  <div class="panel-form" id="panel-form">
+    <div class="form-header">
+      <div class="form-header-title">Your Information</div>
+      <div class="form-back" onclick="closeForm()">← Back to Selections</div>
+    </div>
+    <div class="form-fields">
+      <div class="form-field full">
+        <label>Coach Name *</label>
+        <input type="text" id="f-coach" placeholder="First and last name">
+      </div>
+      <div class="form-field full">
+        <label>Team Designation *</label>
+        <input type="text" id="f-team" placeholder="e.g. 2012 Girls, 2014 Boys">
+      </div>
+      <div class="form-field">
+        <label>Age Group *</label>
+        <select id="f-age">
+          <option value="">Select</option>
+          <option>U8</option><option>U9</option><option>U10</option><option>U11</option>
+          <option>U12</option><option>U13</option><option>U14</option><option>U15</option>
+          <option>U16</option><option>U17</option><option>U18</option><option>U19</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Gender *</label>
+        <select id="f-gender">
+          <option value="">Select</option>
+          <option>Boys</option><option>Girls</option>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Competition Level *</label>
+        <select id="f-level">
+          <option value="">Select your team level</option>
+          <optgroup label="Most Competitive">
+            <option>ECNL-RL</option>
+            <option>Pre-ECNL (U11-U12 only)</option>
+          </optgroup>
+          <optgroup label="Competitive">
+            <option>Gold</option><option>Blue</option>
+          </optgroup>
+          <optgroup label="Least Competitive">
+            <option>White</option><option>Black</option><option>Silver</option>
+          </optgroup>
+        </select>
+      </div>
+      <div class="form-field full">
+        <label>Email Address * (confirmation will be sent here)</label>
+        <input type="email" id="f-email" placeholder="coach@email.com">
+      </div>
+    </div>
+    <div class="form-field full" id="revision-fields" style="display:none">
+        <label>What changed? Note any dropped or added tournaments</label>
+        <input type="text" id="f-rev-notes" placeholder="e.g. Dropping Virginia Cup, adding Jefferson Cup Girls Showcase">
+      </div>
+    <button class="form-send-btn" id="form-send-btn" onclick="submitSelections()">Send My Selections</button>
+  </div>
+  <div class="panel-success" id="panel-success">
+    <div class="success-checkmark">✓</div>
+    <div class="success-msg-title" id="panel-success-title">Selections Submitted</div>
+    <div class="success-msg-body" id="panel-success-body">Your tournament selections have been received and a confirmation has been sent to your email. Club staff will be in touch if there are any questions.</div>
+    <button class="revise-btn" onclick="startRevision()">Revise / Modify Tournament Selections</button>
+  </div>
+</div>
+
+
+<!-- APPLICATION STATUS MODAL -->
+<div class="status-modal-overlay" id="status-overlay" onclick="if(event.target===this)closeStatusModal()">
+  <div class="status-modal">
+    <div class="status-modal-header">
+      <div class="status-modal-title">My Application Status</div>
+      <button class="status-modal-close" onclick="closeStatusModal()">&times;</button>
+    </div>
+    <div class="status-lookup">
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Enter the email address you used when submitting your tournament selections. Status is updated by club staff as applications are processed.</p>
+      <div class="status-lookup-row">
+        <input type="email" class="status-lookup-input" id="status-email-input" placeholder="your@email.com" onkeydown="if(event.key==='Enter')fetchStatus()">
+        <button class="status-lookup-btn" onclick="fetchStatus()">Check Status</button>
+      </div>
+    </div>
+    <div class="status-results" id="status-results">
+      <div class="status-empty">Enter your email above to view your tournament application statuses.</div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
