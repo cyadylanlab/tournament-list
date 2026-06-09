@@ -438,7 +438,7 @@
   /* ── SELECTION SLOTS ── */
   .slots-bar {
     margin-top: 16px; border: 1px solid var(--border); border-radius: 8px;
-    overflow: hidden; background: #fff;
+    overflow: hidden; background: #fff; width: 100%; box-sizing: border-box;
   }
   .slots-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -451,10 +451,10 @@
   .slots-header-sub { font-size: 11px; color: #666; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.04em; }
   .slots-row {
     display: flex; gap: 8px; padding: 12px 14px;
-    align-items: stretch;
+    align-items: stretch; width: 100%; box-sizing: border-box;
   }
   .slot-card {
-    flex: 1; min-width: 0; border-radius: 6px;
+    flex: 1 1 0; min-width: 0; width: 0; border-radius: 6px;
     border: 1.5px dashed #ddd; padding: 10px 12px;
     background: #fafafa; min-height: 80px;
     display: flex; flex-direction: column; justify-content: space-between;
