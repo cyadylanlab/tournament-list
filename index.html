@@ -1064,17 +1064,36 @@ const CLUB_EVENT_IDS = ["club-presidents-cup","club-state-cup"];
 // ── MODAL POSITIONING ─────────────────────────────────────────────────────
 // The page lives in a Wix iframe sized to full content height, so position:fixed
 // covers the entire page — flex-centering a modal puts it in the middle of the
-// whole page, not the user's screen. Instead, anchor each modal near the click
-// that opened it (which is, by definition, where the user is looking).
+// whole page, not the user's screen. We measure the slice of the page that is
+// actually visible in the parent browser window using IntersectionObserver
+// (which works across the cross-origin iframe boundary) and center the modal
+// inside that slice. Falls back to anchoring near the last click.
 let lastPointerY = 0;
 document.addEventListener("pointerdown", function(e) { lastPointerY = e.pageY; }, true);
 
 function positionModalAtClick(modalEl) {
   if (!modalEl) return;
-  // Mobile uses bottom-sheet styling — leave it alone
-  if (window.innerWidth <= 768) { modalEl.style.marginTop = ""; return; }
-  const target = Math.max(20, lastPointerY - 160);
-  modalEl.style.marginTop = target + "px";
+  if (window.innerWidth <= 768) { modalEl.style.marginTop = ""; modalEl.style.maxHeight = ""; return; }
+
+  // Immediate placement near the click so the modal never appears far away,
+  // then refine to true visible-viewport center as soon as the observer reports.
+  modalEl.style.marginTop = Math.max(20, lastPointerY - 160) + "px";
+
+  try {
+    const obs = new IntersectionObserver(function(entries) {
+      obs.disconnect();
+      const e = entries[0];
+      if (!e || !e.intersectionRect || e.intersectionRect.height <= 0) return;
+      const vTop = e.intersectionRect.top + window.scrollY; // top of the visible window, in page coords
+      const vH   = e.intersectionRect.height;               // height of the visible window
+      // Cap the modal to fit the visible window — content scrolls inside the modal instead of the page
+      const maxH = Math.max(300, vH - 48);
+      modalEl.style.maxHeight = maxH + "px";
+      const mH = Math.min(modalEl.offsetHeight || maxH, maxH);
+      modalEl.style.marginTop = Math.max(20, vTop + (vH - mH) / 2) + "px";
+    });
+    obs.observe(document.documentElement);
+  } catch (err) { /* fallback position already set */ }
 }
 
 // ── SELECTION STATE ───────────────────────────────────────────────────────
