@@ -1271,6 +1271,7 @@ function updatePanel() {
     renderCalendar();
     renderSelectionList();
   }
+  updateSlotsVisibility();
 }
 
 
@@ -1461,6 +1462,7 @@ function renderDashboard(mine, email) {
         Otherwise, browse the tournament list below and make your selections.
       </div>
     </div>`;
+    updateSlotsVisibility();
     return;
   }
 
@@ -1532,6 +1534,19 @@ function renderDashboard(mine, email) {
     </div>
     <div class="dash-note">Just submitted or revised? Updates can take a few minutes to appear here — <span style="color:var(--gold);cursor:pointer;text-decoration:underline;" onclick="loadDashboard()">refresh</span>. Statuses are updated by club staff as applications are processed.</div>
   </div>`;
+  updateSlotsVisibility();
+}
+
+// The slots panel is the submission picker — hide it while a coach is just
+// viewing their dashboard with nothing selected; reappears the moment it's
+// needed (a tournament is checked, or the revision flow loads selections).
+function updateSlotsVisibility() {
+  const bar = document.getElementById("slots-bar");
+  if (!bar) return;
+  const dash = document.getElementById("coach-dashboard");
+  const dashVisible = dash && dash.style.display !== "none";
+  const revOpen = document.getElementById("revision-overlay").classList.contains("open");
+  bar.style.display = (dashVisible && selectionOrder.length === 0 && !revOpen) ? "none" : "";
 }
 
 function resetDashboard() {
@@ -1543,6 +1558,7 @@ function resetDashboard() {
   const input = document.getElementById("dash-email-input");
   input.value = "";
   input.focus();
+  updateSlotsVisibility();
 }
 
 // Data carried from the status check into the revision flow ("Make Changes" path)
@@ -1554,6 +1570,7 @@ function switchToRevision() {
   if (!statusRowsForRevision || !statusEmailForRevision) { startRevision(); return; }
   closeStatusModal();
   const revOverlay = document.getElementById("revision-overlay");
+  document.getElementById("slots-bar").style.display = "";
   positionModalAtClick(revOverlay.querySelector(".status-modal"));
   revOverlay.classList.add("open");
   // Fresh revision session state
@@ -1573,6 +1590,7 @@ function switchToRevision() {
 
 function startRevision() {
   const revOverlay = document.getElementById("revision-overlay");
+  document.getElementById("slots-bar").style.display = "";
   positionModalAtClick(revOverlay.querySelector(".status-modal"));
   revOverlay.classList.add("open");
   document.getElementById("revision-email-input").value = "";
@@ -1589,6 +1607,7 @@ function startRevision() {
 
 function closeRevisionModal() {
   document.getElementById("revision-overlay").classList.remove("open");
+  updateSlotsVisibility();
 }
 
 function backToRevEmail() {
@@ -1927,6 +1946,22 @@ function renderSelectionList() {
   }).join("");
 }
 
+// ── TEAM DESIGNATION ──────────────────────────────────────────────────────
+// Club-standard naming: "Valor {Level} {B|G}{birth years}" for the 2026-27 season
+// e.g. U12 Boys Pre-ECNL → "Valor Pre-ECNL B2014/15"
+const AGE_BIRTH_YEARS = {
+  "U9":"2017/18", "U10":"2016/17", "U11":"2015/16", "U12":"2014/15",
+  "U13":"2013/14", "U14":"2012/13", "U15":"2011/12", "U16":"2010/11",
+  "U17":"2009/10", "U18/19":"2008/09"
+};
+function buildTeamDesignation(age, gender, level) {
+  if (!age || !gender || !level) return "";
+  const years = AGE_BIRTH_YEARS[age];
+  if (!years) return age + " " + gender + " " + level; // fallback for anything unmapped
+  const g = gender.charAt(0).toUpperCase(); // B / G
+  return "Valor " + level + " " + g + years;
+}
+
 // ── SUBMIT ────────────────────────────────────────────────────────────────
 async function submitSelections() {
   const coach    = document.getElementById("f-coach").value.trim();
@@ -1934,7 +1969,7 @@ async function submitSelections() {
   const gender   = document.getElementById("f-gender").value;
   const level    = document.getElementById("f-level").value;
   const email    = document.getElementById("f-email").value.trim();
-  const team     = age && gender && level ? age+" "+gender+" "+level : "";
+  const team     = buildTeamDesignation(age, gender, level);
   const revNotes = document.getElementById("f-rev-notes") ? document.getElementById("f-rev-notes").value.trim() : "";
 
   if (!coach||!age||!gender||!level||!email) { showAlert("Please fill in all fields before submitting."); return; }
@@ -2273,7 +2308,7 @@ renderSlots(); // show empty slots framework on load
             <option value="">Select</option>
             <option>U9</option><option>U10</option><option>U11</option><option>U12</option>
             <option>U13</option><option>U14</option><option>U15</option><option>U16</option>
-            <option>U17</option><option>U18</option>
+            <option>U17</option><option>U18/19</option>
           </select>
         </div>
         <div class="form-field">
