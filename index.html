@@ -1125,43 +1125,32 @@ function clearAll() {
 let panelExpanded = false;
 
 function updatePanel() {
-  const total     = selectionOrder.length;
-  const included  = Math.min(total, INCLUDED_MAX);
+  const total      = selectionOrder.length;
+  const included   = Math.min(total, INCLUDED_MAX);
   const additional = Math.max(0, total - INCLUDED_MAX);
 
-  document.getElementById("panel-count-num").textContent = total;
-
+  // Update slots bar breakdown (these still exist)
   const bEl = document.getElementById("panel-breakdown");
-  if (total === 0) {
-    bEl.style.display = "none";
-  } else if (additional > 0) {
-    bEl.innerHTML = `<span style="color:#22c55e">&#10003; ${included} Included</span> &nbsp;&middot;&nbsp; <span style="color:#f59e0b">&#9888; ${additional} Additional &mdash; families will be invoiced</span>`;
-    bEl.style.display = "block";
-  } else {
-    bEl.innerHTML = `<span style="color:#555">${included} / ${INCLUDED_MAX} included slots used</span>`;
-    bEl.style.display = "block";
+  if (bEl) {
+    if (total === 0) {
+      bEl.style.display = "none";
+    } else if (additional > 0) {
+      bEl.innerHTML = `<span style="color:#22c55e">&#10003; ${included} Included</span> &nbsp;&middot;&nbsp; <span style="color:#f59e0b">&#9888; ${additional} Additional &mdash; families will be invoiced</span>`;
+      bEl.style.display = "block";
+    } else {
+      bEl.innerHTML = `<span style="color:#555">${included} / ${INCLUDED_MAX} included slots used</span>`;
+      bEl.style.display = "block";
+    }
   }
 
-  const panel = document.getElementById("sel-panel");
-  if (total === 0) {
-    panel.classList.remove("visible","expanded");
-    document.body.classList.remove("panel-open");
-    panelExpanded = false;
-  } else {
-    panel.classList.add("visible");
-    document.body.classList.add("panel-open");
-    // Auto-expand on first selection
-    if (!panelExpanded) {
-      panelExpanded = true;
-      panel.classList.add("expanded");
-      document.body.classList.add("panel-expanded");
-      document.getElementById("panel-toggle-label").textContent = "Collapse ▼";
-    }
+  // Render the visual components
+  renderSlots();
+  if (total > 0) {
     renderCalendar();
     renderSelectionList();
   }
-  renderSlots();
 }
+
 
 function togglePanel() {
   const panel = document.getElementById("sel-panel");
