@@ -1049,13 +1049,29 @@ function toggleCard(i) {
 
 
 // ── APPS SCRIPT URL ───────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIu-_iIHcY3WeQBR65nHSuKR1dGnpYlP8dPtmpqQeYXEtxskP46t1DtkYuoIBK7XYlCg/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyaB5FyyMGj-nXJmJ7uGXE7J8h5_RsCz_bqrGcrn9AljMqCf-7hqx3uClKujddyOsx_Qw/exec";
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
 const INCLUDED_MAX = 5;
 
 // ── CLUB EVENTS ───────────────────────────────────────────────────────────
 const CLUB_EVENT_IDS = ["club-presidents-cup","club-state-cup"];
+
+// ── MODAL POSITIONING ─────────────────────────────────────────────────────
+// The page lives in a Wix iframe sized to full content height, so position:fixed
+// covers the entire page — flex-centering a modal puts it in the middle of the
+// whole page, not the user's screen. Instead, anchor each modal near the click
+// that opened it (which is, by definition, where the user is looking).
+let lastPointerY = 0;
+document.addEventListener("pointerdown", function(e) { lastPointerY = e.pageY; }, true);
+
+function positionModalAtClick(modalEl) {
+  if (!modalEl) return;
+  // Mobile uses bottom-sheet styling — leave it alone
+  if (window.innerWidth <= 768) { modalEl.style.marginTop = ""; return; }
+  const target = Math.max(20, lastPointerY - 160);
+  modalEl.style.marginTop = target + "px";
+}
 
 // ── SELECTION STATE ───────────────────────────────────────────────────────
 let selectedMap   = {};   // uid → { name, date, month, location, level }
@@ -1316,6 +1332,7 @@ function openForm() {
     btn.textContent = isRevision ? "Submit Revisions →" : "Send My Selections";
     btn.style.background = isRevision ? "#166534" : "#e6b800";
   }
+  positionModalAtClick(document.getElementById("form-modal"));
   document.getElementById("form-overlay").classList.add("open");
 }
 
@@ -1333,7 +1350,9 @@ let replacingTournament = null; // {tournament, date} being replaced
 let swapPairs = []; // [{removed:{tournament,date}, added:{tournament,date}}] — one-to-one replacements this revision
 
 function startRevision() {
-  document.getElementById("revision-overlay").classList.add("open");
+  const revOverlay = document.getElementById("revision-overlay");
+  positionModalAtClick(revOverlay.querySelector(".status-modal"));
+  revOverlay.classList.add("open");
   document.getElementById("revision-email-input").value = "";
   document.getElementById("rev-lookup-result").innerHTML = "";
   document.getElementById("rev-step-1").style.display = "block";
@@ -1405,8 +1424,12 @@ function renderPreviousSelectionsInModal(selections) {
     grouped[m].push(s);
   });
 
+  // Known months in order first, then anything else (club events with odd labels, etc.) so nothing is silently hidden
+  const renderOrder = monthOrder.filter(m => grouped[m])
+    .concat(Object.keys(grouped).filter(m => !monthOrder.includes(m)));
+
   let html = "";
-  monthOrder.forEach(month => {
+  renderOrder.forEach(month => {
     if (!grouped[month]) return;
     html += `<div class="status-month-label">${month}</div>`;
     grouped[month].forEach((s) => {
@@ -1416,6 +1439,7 @@ function renderPreviousSelectionsInModal(selections) {
       const statusKey = (s.status||"Pending").toLowerCase().replace(/\s+/g,"-");
       const statusClass = { "pending":"s-pending","applied":"s-applied","accepted":"s-accepted","declined":"s-declined","waitlisted":"s-waitlisted" }[statusKey] || "s-pending";
       const statusBadge = `<span class="status-badge ${statusClass}" style="font-size:10px;padding:2px 8px;">${s.status||"Pending"}</span>`;
+      const levelTag = s.level ? `<span style="font-size:10px;color:#888;font-family:'Barlow Condensed',sans-serif;">&middot; ${s.level}</span>` : "";
       html += `
         <div class="rev-prev-item" style="cursor:pointer;" onclick="toggleDropSelection('${safeKey}')">
           <input type="checkbox" style="width:16px;height:16px;accent-color:var(--red);flex-shrink:0;cursor:pointer;"
@@ -1424,6 +1448,7 @@ function renderPreviousSelectionsInModal(selections) {
             <div class="rev-prev-name" style="${isDrop ? 'text-decoration:line-through;opacity:0.45;' : ''}">${s.tournament}</div>
             <div class="rev-prev-meta" style="display:flex;align-items:center;gap:8px;margin-top:3px;">
               <span>${s.month !== "Club Event" ? (MONTH_SHORTS_ALL[s.month]||s.month) + " &middot; " : ""}${s.date}</span>
+              ${levelTag}
               ${statusBadge}
             </div>
           </div>
@@ -1445,11 +1470,12 @@ function toggleDropSelection(key) {
 }
 
 function findTournamentUid(name) {
-  if (name === "Presidents Cup") return "club-presidents-cup";
-  if (name === "State Cup")      return "club-state-cup";
+  const n = (name || "").trim().toLowerCase().replace(/[’']/g, "");
+  if (n === "presidents cup") return "club-presidents-cup";
+  if (n === "state cup")      return "club-state-cup";
   for (let mi = 0; mi < MONTHS.length; mi++) {
     for (let ti = 0; ti < MONTHS[mi].tournaments.length; ti++) {
-      if (MONTHS[mi].tournaments[ti].name === name) return `${mi}-${ti}`;
+      if ((MONTHS[mi].tournaments[ti].name || "").trim().toLowerCase().replace(/[’']/g, "") === n) return `${mi}-${ti}`;
     }
   }
   return null;
@@ -1535,13 +1561,16 @@ function confirmRevision() {
   selectedMap = {};
   selectionOrder = [];
 
-  // Pre-load kept selections, restoring any previously set competition levels
+  // Pre-load kept selections, restoring competition levels.
+  // Priority: level set this session > level from the previous submission (read back from the status sheet).
+  const VALID_LEVELS = ["Most Competitive", "Competitive", "Least Competitive"];
   previousSelections.forEach(s => {
     const key = s.tournament + "|" + s.date;
     if (droppingUids.has(key)) return;
     const uid = findTournamentUid(s.tournament);
     if (!uid) return;
-    const restoredLevel = savedLevels[uid] || null;
+    const sheetLevel = VALID_LEVELS.includes((s.level || "").trim()) ? s.level.trim() : null;
+    const restoredLevel = savedLevels[uid] || sheetLevel || null;
     selectedMap[uid] = { name: s.tournament, date: s.date, month: s.month, location: s.location || "", level: restoredLevel };
     selectionOrder.push(uid);
     document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = true);
@@ -1752,7 +1781,9 @@ const STATUS_CSV_URL = "https://docs.google.com/spreadsheets/d/1nZbY2FV8-9459TTd
 const STATUS_MONTH_ORDER = ["August 2026","September 2026","October 2026","November 2026","December 2026","January 2027","February 2027","March 2027","April 2027","May 2027","June 2027","July 2027","Club Event"];
 
 function openStatusModal() {
-  document.getElementById("status-overlay").classList.add("open");
+  const stOverlay = document.getElementById("status-overlay");
+  positionModalAtClick(stOverlay.querySelector(".status-modal"));
+  stOverlay.classList.add("open");
   setTimeout(() => document.getElementById("status-email-input").focus(), 100);
 }
 
@@ -1793,19 +1824,24 @@ async function fetchStatus() {
     const coachName = mine[0].coachName || "";
     let html = `<div class="status-team-header">${coachName} &nbsp;&middot;&nbsp; ${teamName}</div>`;
 
-    STATUS_MONTH_ORDER.forEach(function(month) {
+    // Known months in order first, then anything else (club events with odd labels, etc.) so nothing is silently hidden
+    const statusRenderOrder = STATUS_MONTH_ORDER.filter(m => grouped[m])
+      .concat(Object.keys(grouped).filter(m => !STATUS_MONTH_ORDER.includes(m)));
+
+    statusRenderOrder.forEach(function(month) {
       if (!grouped[month]) return;
       html += `<div class="status-month-label">${month}</div>`;
       grouped[month].forEach(function(r) {
         const statusKey   = (r.status || "Pending").toLowerCase().replace(/\s+/g, "-");
         const statusClass = { "pending":"s-pending","applied":"s-applied","accepted":"s-accepted","declined":"s-declined","waitlisted":"s-waitlisted","cancelled":"s-declined" }[statusKey] || "s-pending";
         const notesHtml   = r.notes ? `<div class="status-notes">${r.notes}</div>` : "";
+        const levelHtml   = r.level ? ` &middot; ${r.level}` : "";
         const revisedBadge = r.selectionType === "Revised"
           ? `<span style="font-size:9px;font-weight:700;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:3px;padding:1px 5px;margin-left:6px;letter-spacing:0.05em;font-family:'Barlow Condensed',sans-serif;vertical-align:middle;">REVISED</span>` : "";
         html += `<div class="status-item">
           <div>
             <div class="status-tournament-name">${r.tournament}${revisedBadge}</div>
-            <div class="status-date">${r.date}</div>
+            <div class="status-date">${r.date}${levelHtml}</div>
             ${notesHtml}
           </div>
           <span class="status-badge ${statusClass}">${r.status || "Pending"}</span>
@@ -1846,10 +1882,11 @@ function parseStatusCSV(text) {
     team:          r[2] || "",
     tournament:    r[3] || "",
     selectionType: r[4] || "",
-    month:         r[5] || "",
-    date:          r[6] || "",
-    status:        r[7] || "Pending",
-    notes:         r[8] || ""
+    level:         r[5] || "",
+    month:         r[6] || "",
+    date:          r[7] || "",
+    status:        r[8] || "Pending",
+    notes:         r[9] || ""
   }; });
 }
 
