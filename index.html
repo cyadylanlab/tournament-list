@@ -1424,10 +1424,7 @@ async function lookUpPreviousSelections() {
   document.getElementById("rev-lookup-result").innerHTML = "";
 
   try {
-    if (!STATUS_CSV_URL) throw new Error("No status URL");
-    const res  = await fetch(STATUS_CSV_URL);
-    const text = await res.text();
-    const rows = parseStatusCSV(text);
+    const rows = await fetchAllStatusRows();
     const mine = rows.filter(r => (r.email||"").toLowerCase() === email);
 
     btn.textContent = "Load My Selections";
@@ -1819,7 +1816,25 @@ function showPanelSuccess() {
 
 
 // ── STATUS CHECK ──────────────────────────────────────────────────────────
-const STATUS_CSV_URL = "https://docs.google.com/spreadsheets/d/1nZbY2FV8-9459TTdz4RJ6AAI-uLM1MRfMcSlsj20Itc/gviz/tq?tqx=out:csv&gid=111328286";
+// Boys and Girls have separate Application Status tabs — both feeds are
+// fetched and merged, then filtered by email, so coaches never pick a side.
+const STATUS_SHEET_ID = "1nZbY2FV8-9459TTdz4RJ6AAI-uLM1MRfMcSlsj20Itc";
+const STATUS_GIDS = {
+  boys:  "111328286",            // Boys Application Status tab
+  girls: "1660152836"             // Girls Application Status tab
+};
+const STATUS_CSV_URLS = Object.values(STATUS_GIDS)
+  .filter(g => /^\d+$/.test(String(g)))
+  .map(g => `https://docs.google.com/spreadsheets/d/${STATUS_SHEET_ID}/gviz/tq?tqx=out:csv&gid=${g}`);
+
+async function fetchAllStatusRows() {
+  if (STATUS_CSV_URLS.length === 0) throw new Error("No status feeds configured");
+  const results = await Promise.allSettled(STATUS_CSV_URLS.map(u => fetch(u).then(r => r.text())));
+  let rows = [];
+  results.forEach(r => { if (r.status === "fulfilled") rows = rows.concat(parseStatusCSV(r.value)); });
+  if (results.every(r => r.status === "rejected")) throw new Error("All status feeds failed");
+  return rows;
+}
 
 const STATUS_MONTH_ORDER = ["August 2026","September 2026","October 2026","November 2026","December 2026","January 2027","February 2027","March 2027","April 2027","May 2027","June 2027","July 2027","Club Event"];
 
@@ -1837,7 +1852,7 @@ function closeStatusModal() {
 async function fetchStatus() {
   const email = document.getElementById("status-email-input").value.trim().toLowerCase();
   if (!email || !email.includes("@")) { showAlert("Please enter a valid email address."); return; }
-  if (!STATUS_CSV_URL) {
+  if (STATUS_CSV_URLS.length === 0) {
     document.getElementById("status-results").innerHTML = '<div class="status-empty">Status checking is not yet active. Please check back later or contact club staff.</div>';
     return;
   }
@@ -1846,9 +1861,7 @@ async function fetchStatus() {
   resultsEl.innerHTML = '<div class="status-empty">Loading…</div>';
 
   try {
-    const res  = await fetch(STATUS_CSV_URL);
-    const text = await res.text();
-    const rows = parseStatusCSV(text);
+    const rows = await fetchAllStatusRows();
     const mine = rows.filter(r => (r.email||"").toLowerCase() === email);
 
     if (mine.length === 0) {
