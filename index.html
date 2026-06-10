@@ -1049,7 +1049,7 @@ function toggleCard(i) {
 
 
 // ── APPS SCRIPT URL ───────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzpfFvgQ5tSPrGv1Kt-9YF34xewzUfm9iuv4RltVzA9Bh7CsCIe1nGX_NZ4i8FX8Nneg/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIu-_iIHcY3WeQBR65nHSuKR1dGnpYlP8dPtmpqQeYXEtxskP46t1DtkYuoIBK7XYlCg/exec";
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
 const INCLUDED_MAX = 5;
@@ -1076,8 +1076,14 @@ function onRowCheck(chk) {
   const { uid, name, date, month, location } = chk.dataset;
   if (chk.checked) {
     if (!selectedMap[uid]) {
-      // If in replacement mode, this selection is the replacement — exit replacement mode
+      // If in replacement mode, this selection is the replacement — record the pairing, then exit replacement mode
       if (inReplacementMode) {
+        if (replacingTournament) {
+          swapPairs.push({
+            removed: { tournament: replacingTournament.tournament, date: replacingTournament.date },
+            added:   { tournament: name, date: date }
+          });
+        }
         inReplacementMode = false;
         replacingTournament = null;
       }
@@ -1089,6 +1095,8 @@ function onRowCheck(chk) {
   } else {
     delete selectedMap[uid];
     selectionOrder = selectionOrder.filter(u => u !== uid);
+    // If this tournament was recorded as a replacement, the pairing is no longer valid
+    swapPairs = swapPairs.filter(p => (p.added.tournament || "") !== name);
     document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
     document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.remove("selected"));
   }
@@ -1100,8 +1108,14 @@ function onClubCheck(chk) {
   const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
   if (chk.checked) {
     if (!selectedMap[uid]) {
-      // If in replacement mode, this selection is the replacement — exit replacement mode
+      // If in replacement mode, this selection is the replacement — record the pairing, then exit replacement mode
       if (inReplacementMode) {
+        if (replacingTournament) {
+          swapPairs.push({
+            removed: { tournament: replacingTournament.tournament, date: replacingTournament.date },
+            added:   { tournament: name, date: date }
+          });
+        }
         inReplacementMode = false;
         replacingTournament = null;
       }
@@ -1113,6 +1127,7 @@ function onClubCheck(chk) {
   } else {
     delete selectedMap[uid];
     selectionOrder = selectionOrder.filter(u => u !== uid);
+    swapPairs = swapPairs.filter(p => (p.added.tournament || "") !== name);
     document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
     if (rowEl) rowEl.classList.remove("selected");
   }
@@ -1124,8 +1139,10 @@ function setLevel(uid, level) {
 }
 
 function removeSelection(uid) {
+  const remName = selectedMap[uid] ? selectedMap[uid].name : null;
   delete selectedMap[uid];
   selectionOrder = selectionOrder.filter(u => u !== uid);
+  if (remName) swapPairs = swapPairs.filter(p => (p.added.tournament || "") !== remName);
   document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
   document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.remove("selected"));
   const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
@@ -1140,7 +1157,7 @@ function clearAll() {
     const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
     if (rowEl) rowEl.classList.remove("selected");
   });
-  selectedMap = {}; selectionOrder = [];
+  selectedMap = {}; selectionOrder = []; swapPairs = [];
   updatePanel();
 }
 
@@ -1184,6 +1201,75 @@ function togglePanel() {
   // panel-toggle-label removed
 }
 
+// ── REVISION CHANGE SUMMARY ───────────────────────────────────────────────
+// Compares current selections against the coach's previous submission.
+// Returns { removed:[prevSelection], added:[selectedMap entry], pairs:[swapPair] }
+// A tournament both dropped and re-added cancels out (treated as kept).
+function computeRevisionChanges() {
+  const prevByName = {};
+  previousSelections.forEach(s => { prevByName[(s.tournament || "").trim()] = s; });
+  const currentNames = new Set(selectionOrder.map(uid => ((selectedMap[uid] && selectedMap[uid].name) || "").trim()));
+
+  const removed = previousSelections.filter(s =>
+    droppingUids.has(s.tournament + "|" + s.date) && !currentNames.has((s.tournament || "").trim()));
+
+  const added = selectionOrder
+    .map(uid => selectedMap[uid])
+    .filter(s => s && !prevByName[(s.name || "").trim()]);
+
+  const removedNames = new Set(removed.map(r => (r.tournament || "").trim()));
+  const addedNames   = new Set(added.map(a => (a.name || "").trim()));
+  const pairs = swapPairs.filter(p =>
+    removedNames.has((p.removed.tournament || "").trim()) &&
+    addedNames.has((p.added.tournament || "").trim()));
+
+  return { removed, added, pairs };
+}
+
+function renderRevisionChangesSummary() {
+  const el = document.getElementById("rev-changes-summary");
+  if (!el) return null;
+  if (!isRevision) { el.style.display = "none"; el.innerHTML = ""; return null; }
+
+  const ch = computeRevisionChanges();
+  if (ch.removed.length === 0 && ch.added.length === 0) {
+    el.style.display = "none"; el.innerHTML = ""; return ch;
+  }
+
+  const pairedRemoved = new Set(ch.pairs.map(p => (p.removed.tournament || "").trim()));
+  const pairedAdded   = new Set(ch.pairs.map(p => (p.added.tournament || "").trim()));
+
+  const itemStyle = "font-family:'Barlow Condensed',sans-serif;font-size:14px;line-height:1.5;";
+  let rows = "";
+
+  // One-to-one swaps first
+  ch.pairs.forEach(p => {
+    rows += `<div style="${itemStyle}display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="color:#ef4444;text-decoration:line-through;">${p.removed.tournament}</span>
+      <span style="color:#999;font-size:15px;">&#8594;</span>
+      <span style="color:#166534;font-weight:700;">${p.added.tournament}</span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:0.06em;color:#92400e;background:#fffbeb;border:1px solid #fde68a;border-radius:3px;padding:1px 6px;text-transform:uppercase;">Replacement</span>
+    </div>`;
+  });
+
+  // Remaining removals
+  ch.removed.filter(r => !pairedRemoved.has((r.tournament || "").trim())).forEach(r => {
+    rows += `<div style="${itemStyle}"><span style="color:#ef4444;font-weight:700;">&#10005; Removing</span> <span style="color:#ef4444;text-decoration:line-through;">${r.tournament}</span> <span style="color:#aaa;">(${r.date || "TBD"})</span></div>`;
+  });
+
+  // Remaining additions
+  ch.added.filter(a => !pairedAdded.has((a.name || "").trim())).forEach(a => {
+    rows += `<div style="${itemStyle}"><span style="color:#166534;font-weight:700;">+ Adding</span> <span style="color:#166534;font-weight:600;">${a.name}</span> <span style="color:#aaa;">(${a.date || "TBD"})</span></div>`;
+  });
+
+  el.innerHTML = `
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#92400e;margin-bottom:7px;">Changes Summary</div>
+    <div style="display:flex;flex-direction:column;gap:5px;">${rows}</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;color:#999;margin-top:8px;">Review your changes above before submitting. Everything else from your previous submission is being kept.</div>`;
+  el.style.display = "block";
+  return ch;
+}
+
 function openForm() {
   if (selectionOrder.length === 0) { alert("Please select at least one tournament first."); return; }
 
@@ -1205,6 +1291,22 @@ function openForm() {
   }
   document.getElementById("revision-fields").style.display = isRevision ? "block" : "none";
   if (isRevision && revisionEmail) document.getElementById("f-email").value = revisionEmail;
+
+  // Changes Summary block + auto-prefill of the "What changed?" notes field
+  const changes = renderRevisionChangesSummary();
+  if (isRevision && changes) {
+    const notesEl = document.getElementById("f-rev-notes");
+    if (notesEl && !notesEl.value.trim()) {
+      const pairedRemoved = new Set(changes.pairs.map(p => (p.removed.tournament || "").trim()));
+      const pairedAdded   = new Set(changes.pairs.map(p => (p.added.tournament || "").trim()));
+      const parts = [];
+      changes.pairs.forEach(p => parts.push("Replaced " + p.removed.tournament + " with " + p.added.tournament));
+      changes.removed.filter(r => !pairedRemoved.has((r.tournament || "").trim())).forEach(r => parts.push("Dropped " + r.tournament));
+      changes.added.filter(a => !pairedAdded.has((a.name || "").trim())).forEach(a => parts.push("Added " + a.name));
+      if (parts.length > 0) notesEl.value = parts.join("; ");
+    }
+  }
+
   document.getElementById("form-modal-title").textContent = isRevision ? "Submit Your Revisions" : "Your Information";
   document.getElementById("form-modal-body").style.display = "block";
   document.getElementById("form-modal-success").style.display = "none";
@@ -1228,6 +1330,7 @@ let previousSelections = []; // tournaments from last submission
 let droppingUids = new Set(); // uids coach has marked to drop
 let inReplacementMode = false; // true while coach is browsing for a replacement
 let replacingTournament = null; // {tournament, date} being replaced
+let swapPairs = []; // [{removed:{tournament,date}, added:{tournament,date}}] — one-to-one replacements this revision
 
 function startRevision() {
   document.getElementById("revision-overlay").classList.add("open");
@@ -1237,6 +1340,9 @@ function startRevision() {
   document.getElementById("rev-step-2").style.display = "none";
   document.getElementById("rev-modal-title").textContent = "Revise / Modify My Selections";
   droppingUids = new Set();
+  swapPairs = [];
+  inReplacementMode = false;
+  replacingTournament = null;
   setTimeout(() => document.getElementById("revision-email-input").focus(), 150);
 }
 
@@ -1413,6 +1519,12 @@ function renderSlotsDuringReplacement() {
 function confirmRevision() {
   closeRevisionModal();
 
+  // Save any competition levels the coach already set this session
+  const savedLevels = {};
+  Object.keys(selectedMap).forEach(uid => {
+    if (selectedMap[uid] && selectedMap[uid].level) savedLevels[uid] = selectedMap[uid].level;
+  });
+
   // Clear current selections
   Object.keys(selectedMap).forEach(uid => {
     document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = false);
@@ -1423,13 +1535,14 @@ function confirmRevision() {
   selectedMap = {};
   selectionOrder = [];
 
-  // Pre-load kept selections
+  // Pre-load kept selections, restoring any previously set competition levels
   previousSelections.forEach(s => {
     const key = s.tournament + "|" + s.date;
     if (droppingUids.has(key)) return;
     const uid = findTournamentUid(s.tournament);
     if (!uid) return;
-    selectedMap[uid] = { name: s.tournament, date: s.date, month: s.month, location: s.location || "", level: null };
+    const restoredLevel = savedLevels[uid] || null;
+    selectedMap[uid] = { name: s.tournament, date: s.date, month: s.month, location: s.location || "", level: restoredLevel };
     selectionOrder.push(uid);
     document.querySelectorAll(`[data-uid="${uid}"]`).forEach(el => el.checked = true);
     document.querySelectorAll(`#datarow-${uid},#mcard-${uid}`).forEach(el => el.classList.add("selected"));
@@ -1582,12 +1695,19 @@ async function submitSelections() {
   const additionalUids = selectionOrder.slice(INCLUDED_MAX);
   const makeObj = uid => { const s=selectedMap[uid]; return { tournament:s.name, month:s.month, date:s.date, location:s.location, entryLevel:s.level||"Not specified" }; };
 
+  // One-to-one replacement pairs (validated against current state) — revisions only
+  const validPairs = isRevision ? computeRevisionChanges().pairs : [];
+
   const payload = {
     timestamp: new Date().toISOString(), submissionType: isRevision?"Revision":"Initial",
     revisionNotes: revNotes, coachName: coach, teamDesignation: team,
     ageGroup: age, gender, competitionLevel: level, email,
     totalSelected: selectionOrder.length, includedCount: includedUids.length, additionalCount: additionalUids.length,
-    includedSelections: includedUids.map(makeObj), additionalSelections: additionalUids.map(makeObj)
+    includedSelections: includedUids.map(makeObj), additionalSelections: additionalUids.map(makeObj),
+    replacements: validPairs.map(p => ({
+      removedTournament: p.removed.tournament, removedDate: p.removed.date,
+      addedTournament:   p.added.tournament,   addedDate:   p.added.date
+    }))
   };
 
   const btn = document.getElementById("form-send-btn");
@@ -1614,6 +1734,12 @@ function showPanelSuccess() {
   document.getElementById("form-modal-title").textContent = isRevision ? "Revision Submitted ✓" : "Selections Submitted ✓";
   // Reset revision state
   isRevision = false; revisionEmail = "";
+  swapPairs = []; droppingUids = new Set();
+  inReplacementMode = false; replacingTournament = null;
+  const sumEl = document.getElementById("rev-changes-summary");
+  if (sumEl) { sumEl.style.display = "none"; sumEl.innerHTML = ""; }
+  const notesElReset = document.getElementById("f-rev-notes");
+  if (notesElReset) notesElReset.value = "";
   // Reset the slots bar submit button style
   const slotBtn = document.querySelector(".slots-submit-btn");
   if (slotBtn) { slotBtn.textContent = "Complete Submission →"; slotBtn.style.background = ""; }
@@ -1674,9 +1800,11 @@ async function fetchStatus() {
         const statusKey   = (r.status || "Pending").toLowerCase().replace(/\s+/g, "-");
         const statusClass = { "pending":"s-pending","applied":"s-applied","accepted":"s-accepted","declined":"s-declined","waitlisted":"s-waitlisted","cancelled":"s-declined" }[statusKey] || "s-pending";
         const notesHtml   = r.notes ? `<div class="status-notes">${r.notes}</div>` : "";
+        const revisedBadge = r.selectionType === "Revised"
+          ? `<span style="font-size:9px;font-weight:700;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:3px;padding:1px 5px;margin-left:6px;letter-spacing:0.05em;font-family:'Barlow Condensed',sans-serif;vertical-align:middle;">REVISED</span>` : "";
         html += `<div class="status-item">
           <div>
-            <div class="status-tournament-name">${r.tournament}</div>
+            <div class="status-tournament-name">${r.tournament}${revisedBadge}</div>
             <div class="status-date">${r.date}</div>
             ${notesHtml}
           </div>
@@ -1713,14 +1841,15 @@ function parseStatusCSV(text) {
   if (field || row.length) { row.push(field); if (row.some(f => f)) rows.push(row); }
 
   return rows.slice(1).map(function(r) { return {
-    email:      r[0] || "",
-    coachName:  r[1] || "",
-    team:       r[2] || "",
-    tournament: r[3] || "",
-    month:      r[4] || "",
-    date:       r[5] || "",
-    status:     r[6] || "Pending",
-    notes:      r[7] || ""
+    email:         r[0] || "",
+    coachName:     r[1] || "",
+    team:          r[2] || "",
+    tournament:    r[3] || "",
+    selectionType: r[4] || "",
+    month:         r[5] || "",
+    date:          r[6] || "",
+    status:        r[7] || "Pending",
+    notes:         r[8] || ""
   }; });
 }
 
@@ -1818,6 +1947,7 @@ renderSlots(); // show empty slots framework on load
       <button class="status-modal-close" onclick="closeFormModal()">&times;</button>
     </div>
     <div id="form-modal-body" style="padding:20px 24px;overflow-y:auto;flex:1;min-height:0;">
+      <div id="rev-changes-summary" style="display:none;background:#fffdf5;border:1px solid #fde68a;border-radius:8px;padding:14px 16px;margin-bottom:16px;"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
         <div class="form-field full" style="grid-column:1/-1;">
           <label>Coach Name *</label>
