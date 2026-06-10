@@ -1362,6 +1362,8 @@ function openForm() {
 
   document.getElementById("form-modal-title").textContent = isRevision ? "Submit Your Revisions" : "Your Information";
   document.getElementById("form-modal-body").style.display = "block";
+  const sendWrapOpen = document.getElementById("form-send-wrap");
+  if (sendWrapOpen) sendWrapOpen.style.display = "block";
   document.getElementById("form-modal-success").style.display = "none";
   const btn = document.getElementById("form-send-btn");
   if (btn) {
@@ -1441,8 +1443,10 @@ async function lookUpPreviousSelections() {
     revisionEmail = email;
     renderPreviousSelectionsInModal(mine);
     document.getElementById("rev-step-1").style.display = "none";
-    document.getElementById("rev-step-2").style.display = "block";
+    document.getElementById("rev-step-2").style.display = "flex";
     document.getElementById("rev-modal-title").textContent = "Your Current Selections";
+    // Modal just grew from a small email form to a tall list — re-center it in the visible window
+    positionModalAtClick(document.getElementById("revision-overlay").querySelector(".status-modal"));
     renderRevisionPreview();
   } catch(e) {
     btn.textContent = "Load My Selections";
@@ -1796,6 +1800,8 @@ function showPanelSuccess() {
     ? "Your revised selections have been received and your confirmation email has been updated. Club staff will review the changes."
     : "Your tournament selections have been received and a confirmation has been sent to your email. Club staff will be in touch if there are any questions.";
   document.getElementById("form-modal-body").style.display = "none";
+  const sendWrap = document.getElementById("form-send-wrap");
+  if (sendWrap) sendWrap.style.display = "none";
   document.getElementById("form-modal-success").style.display = "flex";
   document.getElementById("form-modal-title").textContent = isRevision ? "Revision Submitted ✓" : "Selections Submitted ✓";
   // Reset revision state
@@ -1887,6 +1893,8 @@ async function fetchStatus() {
     });
 
     resultsEl.innerHTML = html;
+    // Results just expanded the modal — re-center it in the visible window
+    positionModalAtClick(document.getElementById("status-overlay").querySelector(".status-modal"));
   } catch(e) {
     resultsEl.innerHTML = '<div class="status-empty">Could not load status data. Please try again or contact club staff.</div>';
   }
@@ -2077,7 +2085,7 @@ renderSlots(); // show empty slots framework on load
         </div>
       </div>
     </div>
-    <div style="padding:0 24px 24px;">
+    <div id="form-send-wrap" style="padding:0 24px 24px;">
       <button class="form-send-btn" id="form-send-btn" onclick="submitSelections()" style="width:100%;margin:0;border-radius:6px;">Send My Selections</button>
     </div>
     <div id="form-modal-success" style="display:none;padding:32px 24px;text-align:center;flex-direction:column;align-items:center;">
@@ -2106,12 +2114,12 @@ renderSlots(); // show empty slots framework on load
       </div>
       <div id="rev-lookup-result" style="padding:0 24px 16px;font-size:12.5px;color:var(--muted2);"></div>
     </div>
-    <div id="rev-step-2" style="display:none;">
-      <div style="padding:14px 24px 10px;border-bottom:1px solid var(--border);">
+    <div id="rev-step-2" style="display:none;flex-direction:column;min-height:0;flex:1;">
+      <div style="padding:14px 24px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
         <p style="font-size:12.5px;color:var(--muted);line-height:1.5;">Check the box next to any tournament you want to <strong>remove or replace</strong>. Leave unchecked ones as-is. Then click <strong>Continue</strong> to browse the full list and add replacements.</p>
       </div>
       <div id="rev-prev-list" class="status-results" style="flex:1;overflow-y:auto;min-height:0;"></div>
-      <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+      <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
         <button onclick="backToRevEmail()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">&larr; Back</button>
         <button onclick="closeRevisionModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Cancel</button>
         <button onclick="confirmRevisionAndSubmit()" style="background:transparent;border:2px solid #22c55e;color:#166534;border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Submit Without Adding More</button>
