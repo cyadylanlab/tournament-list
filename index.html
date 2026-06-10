@@ -1173,24 +1173,22 @@ function togglePanel() {
 }
 
 function openForm() {
-  const panel = document.getElementById("sel-panel");
-  panel.classList.add("form-mode", "visible");
-  panel.classList.remove("expanded");
-  panel.style.display = "flex";
-  panel.style.transform = "translateY(0)";
+  if (selectionOrder.length === 0) { alert("Please select at least one tournament first."); return; }
   document.getElementById("revision-fields").style.display = isRevision ? "block" : "none";
   if (isRevision && revisionEmail) document.getElementById("f-email").value = revisionEmail;
-  document.body.classList.add("panel-open", "panel-form-active");
-  window.scrollTo({ top: 0, behavior: "smooth" });
+  document.getElementById("form-modal-title").textContent = isRevision ? "Revise Your Information" : "Your Information";
+  document.getElementById("form-modal-body").style.display = "block";
+  document.getElementById("form-modal-success").style.display = "none";
+  const btn = document.getElementById("form-send-btn");
+  if (btn) { btn.disabled = false; btn.textContent = "Send My Selections"; }
+  document.getElementById("form-overlay").classList.add("open");
 }
 
-function closeForm() {
-  const panel = document.getElementById("sel-panel");
-  panel.classList.remove("form-mode");
-  panel.style.display = "";
-  panel.style.transform = "";
-  document.body.classList.remove("panel-form-active");
+function closeFormModal() {
+  document.getElementById("form-overlay").classList.remove("open");
 }
+
+
 
 // ── REVISION FLOW ─────────────────────────────────────────────────────────
 let previousSelections = []; // tournaments from last submission
@@ -1466,19 +1464,13 @@ async function submitSelections() {
 }
 
 function showPanelSuccess() {
-  const panel = document.getElementById("sel-panel");
-  panel.classList.remove("form-mode","expanded");
-  panel.classList.add("success-mode","visible");
-  panel.style.display = "flex";
-  panel.style.transform = "translateY(0)";
-  document.body.classList.remove("panel-form-active");
-  document.getElementById("panel-toggle-label").textContent = isRevision ? "Revision Submitted \u2713" : "Submitted \u2713";
-
   const bodyEl = document.getElementById("panel-success-body");
   if (bodyEl) bodyEl.textContent = isRevision
     ? "Your revised selections have been received and your confirmation email has been updated. Club staff will review the changes."
     : "Your tournament selections have been received and a confirmation has been sent to your email. Club staff will be in touch if there are any questions.";
-
+  document.getElementById("form-modal-body").style.display = "none";
+  document.getElementById("form-modal-success").style.display = "flex";
+  document.getElementById("form-modal-title").textContent = isRevision ? "Revision Submitted ✓" : "Submitted ✓";
   isRevision    = false;
   revisionEmail = "";
 }
@@ -1735,124 +1727,75 @@ async function loadFromSheet() {
 loadFromSheet();
 renderSlots(); // show empty slots framework on load</script>
 
-<!-- BOTTOM SELECTION PANEL -->
-<div class="panel" id="sel-panel">
-  <div class="panel-bar" onclick="togglePanel()">
-    <div>
-      <div class="panel-count"><span id="panel-count-num">0</span> Tournaments Selected</div>
-      <div class="panel-breakdown" id="panel-breakdown" style="display:none"></div>
-    </div>
-    <div class="panel-toggle-btn" id="panel-toggle-label">Review &amp; Submit ▲</div>
-  </div>
-  <div class="panel-body">
-    <div class="panel-calendar">
-      <div class="cal-label">Your Season at a Glance</div>
-      <div class="cal-months" id="cal-months"></div>
-    </div>
-    <div class="panel-selections">
-      <div class="panel-sel-label">Selected Tournaments — choose your entry level for each</div>
-      <div id="sel-list"></div>
-    </div>
-    <div class="panel-footer">
-      <button class="panel-clear-btn" onclick="clearAll()">Clear All</button>
-      <button class="panel-submit-btn" onclick="openForm()">Complete Submission →</button>
-    </div>
-  </div>
-  <div class="panel-form" id="panel-form">
-    <div class="form-header">
-      <div class="form-header-title">Your Information</div>
-      <div class="form-back" onclick="closeForm()">← Back to Selections</div>
-    </div>
-    <div class="form-fields">
-      <div class="form-field full">
-        <label>Coach Name *</label>
-        <input type="text" id="f-coach" placeholder="First and last name">
-      </div>
-      <div class="form-field">
-        <label>Age *</label>
-        <select id="f-age">
-          <option value="">Select</option>
-          <option>U9</option><option>U10</option><option>U11</option><option>U12</option>
-          <option>U13</option><option>U14</option><option>U15</option><option>U16</option>
-          <option>U17</option><option>U18</option>
-        </select>
-      </div>
-      <div class="form-field">
-        <label>Gender *</label>
-        <select id="f-gender">
-          <option value="">Select</option>
-          <option>Boys</option><option>Girls</option>
-        </select>
-      </div>
-      <div class="form-field full">
-        <label>Team *</label>
-        <select id="f-level">
-          <option value="">Select your team</option>
-          <option>ECNL-RL</option>
-          <option>Pre-ECNL</option>
-          <option>Gold</option>
-          <option>White</option>
-          <option>Black</option>
-          <option>Silver</option>
-          <option>Blue</option>
-        </select>
-      </div>
-      <div class="form-field full">
-        <label>Email Address * (confirmation will be sent here)</label>
-        <input type="email" id="f-email" placeholder="coach@email.com">
-      </div>
-    </div>
-    <div id="revision-fields" style="display:none;padding:0 24px 12px;box-sizing:border-box;width:100%;">
-        <div class="form-field full" style="width:100%;">
-          <label>What changed? Note any dropped or added tournaments</label>
-          <input type="text" id="f-rev-notes" placeholder="e.g. Dropping Virginia Cup, adding Jefferson Cup Girls Showcase" style="width:100%;box-sizing:border-box;">
-        </div>
-      </div>
-    <button class="form-send-btn" id="form-send-btn" onclick="submitSelections()">Send My Selections</button>
-  </div>
-  <div class="panel-success" id="panel-success">
-    <div class="success-checkmark">✓</div>
-    <div class="success-msg-title" id="panel-success-title">Selections Submitted</div>
-    <div class="success-msg-body" id="panel-success-body">Your tournament selections have been received and a confirmation has been sent to your email. Club staff will be in touch if there are any questions.</div>
-    <button class="revise-btn" onclick="startRevision()">Revise / Modify Tournament Selections</button>
-  </div>
-</div>
-
-
-<!-- REVISION EMAIL MODAL -->
-<div class="status-modal-overlay" id="revision-overlay" onclick="if(event.target===this)closeRevisionModal()">
-  <div class="status-modal" style="max-width:740px;">
+<!-- SUBMISSION FORM MODAL -->
+<div class="status-modal-overlay" id="form-overlay" onclick="if(event.target===this)closeFormModal()">
+  <div class="status-modal" id="form-modal" style="max-width:640px;">
     <div class="status-modal-header">
-      <div class="status-modal-title" id="rev-modal-title">Revise / Modify My Selections</div>
-      <button class="status-modal-close" onclick="closeRevisionModal()">&times;</button>
+      <div class="status-modal-title" id="form-modal-title">Your Information</div>
+      <button class="status-modal-close" onclick="closeFormModal()">&times;</button>
     </div>
 
-    <!-- STEP 1: Email lookup -->
-    <div id="rev-step-1">
-      <div class="status-lookup">
-        <p style="font-size:12.5px;color:var(--muted);margin-bottom:12px;line-height:1.5;">Enter the email you used when you originally submitted and we will load your previous selections.</p>
-        <div class="status-lookup-row">
-          <input type="email" class="status-lookup-input" id="revision-email-input" placeholder="coach@email.com" onkeydown="if(event.key==='Enter')lookUpPreviousSelections()">
-          <button class="status-lookup-btn" id="rev-lookup-btn" onclick="lookUpPreviousSelections()">Load My Selections</button>
+    <!-- Form state -->
+    <div id="form-modal-body" style="padding:20px 24px;overflow-y:auto;max-height:70vh;">
+      <div class="form-fields" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="form-field full" style="grid-column:1/-1;">
+          <label>Coach Name *</label>
+          <input type="text" id="f-coach" placeholder="First and last name">
+        </div>
+        <div class="form-field">
+          <label>Age *</label>
+          <select id="f-age">
+            <option value="">Select</option>
+            <option>U9</option><option>U10</option><option>U11</option><option>U12</option>
+            <option>U13</option><option>U14</option><option>U15</option><option>U16</option>
+            <option>U17</option><option>U18</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Gender *</label>
+          <select id="f-gender">
+            <option value="">Select</option>
+            <option>Boys</option><option>Girls</option>
+          </select>
+        </div>
+        <div class="form-field full" style="grid-column:1/-1;">
+          <label>Team *</label>
+          <select id="f-level">
+            <option value="">Select your team</option>
+            <option>ECNL-RL</option><option>Pre-ECNL</option><option>Gold</option>
+            <option>White</option><option>Black</option><option>Silver</option><option>Blue</option>
+          </select>
+        </div>
+        <div class="form-field full" style="grid-column:1/-1;">
+          <label>Email Address * (confirmation will be sent here)</label>
+          <input type="email" id="f-email" placeholder="coach@email.com">
         </div>
       </div>
-      <div id="rev-lookup-result" style="padding:0 24px 16px;font-size:12.5px;color:var(--muted2);"></div>
+      <div id="revision-fields" style="display:none;padding:12px 0 0;">
+        <div class="form-field full">
+          <label>What changed? Note any dropped or added tournaments</label>
+          <input type="text" id="f-rev-notes" placeholder="e.g. Dropping Virginia Cup, adding Jefferson Cup Girls Showcase">
+        </div>
+      </div>
     </div>
 
-    <!-- STEP 2: Previous selections list -->
-    <div id="rev-step-2" style="display:none;">
-      <div style="padding:14px 24px 10px;border-bottom:1px solid var(--border);">
-        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;">Check the box next to any tournament you want to <strong>remove or replace</strong>. Leave unchecked ones as-is. Then click <strong>Continue</strong> to browse the full list and add replacements.</p>
-      </div>
-      <div id="rev-prev-list" class="status-results" style="max-height:340px;"></div>
-      <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-        <button onclick="backToRevEmail()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">← Back</button>
-        <button onclick="closeRevisionModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Cancel — No Changes</button>
-        <button onclick="confirmRevision()" class="status-lookup-btn" style="flex:1;">Continue to Full List →</button>
-      </div>
+    <div style="padding:0 24px 24px;">
+      <button class="form-send-btn" id="form-send-btn" onclick="submitSelections()"
+        style="width:100%;margin:0;border-radius:6px;">Send My Selections</button>
+    </div>
+
+    <!-- Success state (hidden until submit) -->
+    <div id="form-modal-success" style="display:none;padding:32px 24px;text-align:center;flex-direction:column;align-items:center;">
+      <div class="success-checkmark">&#10003;</div>
+      <div class="success-msg-title" id="panel-success-title">Selections Submitted</div>
+      <div class="success-msg-body" id="panel-success-body">Your tournament selections have been received and a confirmation has been sent to your email.</div>
+      <button class="revise-btn" style="margin-top:16px;" onclick="closeFormModal();startRevision()">Revise / Modify My Selections</button>
     </div>
   </div>
 </div>
+
+<!-- DUMMY PANEL (state tracking only) -->
+<div id="sel-panel" style="display:none;"></div>
 
 <!-- APPLICATION STATUS MODAL -->
 <div class="status-modal-overlay" id="status-overlay" onclick="if(event.target===this)closeStatusModal()">
