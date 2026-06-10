@@ -471,10 +471,21 @@
   .slot-empty-label { font-size: 11px; color: #bbb; font-style: italic; margin-top: 4px; flex: 1; }
   .slot-remove-x { position: absolute; top: 5px; right: 7px; font-size: 11px; color: #ccc; cursor: pointer; line-height: 1; transition: color 0.15s; }
   .slot-remove-x:hover { color: #ef4444; }
-  .slot-entry-pills { display: flex; gap: 3px; margin-top: 5px; flex-wrap: wrap; }
-  .slot-entry-pill { font-size: 9px; font-weight: 700; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.03em; padding: 2px 5px; border-radius: 3px; cursor: pointer; border: 1px solid #ddd; background: transparent; color: #aaa; transition: all 0.15s; }
+  .slot-entry-pills { display: flex; flex-direction: column; gap: 4px; margin-top: 5px; }
+  .slot-entry-pill {
+    font-size: 10px; font-weight: 700; font-family: "Barlow Condensed", sans-serif;
+    letter-spacing: 0.04em; padding: 5px 6px; border-radius: 4px; cursor: pointer;
+    border: 1.5px solid #ccc; background: #f4f4f4; color: #111; transition: all 0.15s;
+    flex: 1; text-align: center; line-height: 1.25; white-space: normal;
+    word-break: break-word;
+  }
   .slot-entry-pill.active { background: var(--gold); color: #fff; border-color: var(--gold); }
-  .slot-entry-pill:hover:not(.active) { border-color: var(--gold); color: var(--gold); }
+  .slot-entry-pill:hover:not(.active) { border-color: var(--gold); color: var(--gold); background: var(--gold-bg); }
+  /* Warning state — card filled but no level selected */
+  .slot-card.needs-level { border: 2px solid #f59e0b !important; background: rgba(245,158,11,0.05) !important; }
+  .slot-level-label { font-size: 9.5px; font-weight: 700; font-family: "Barlow Condensed", sans-serif; letter-spacing: 0.08em; text-transform: uppercase; margin-top: 6px; margin-bottom: 3px; color: #aaa; }
+  .slot-card.needs-level .slot-level-label { color: #f59e0b; }
+  .slot-card.needs-level .slot-level-label::after { content: " *"; color: #ef4444; }
 
 
   /* REVISION PREV SELECTIONS */
@@ -1036,7 +1047,7 @@ function toggleCard(i) {
 
 
 // ── APPS SCRIPT URL ───────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpkjoTXEXpk3TNWiNkHRV_qUgm7Us5DFEfkBNVemluqFaQORGmL_vVqszTtUXDZaSwiQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJknds86y4BtwIhVxP-0a9bn1lfdiFQmPMMZQw4YOIr_SokOJMffP1IJ4jsXHMpZvNxQ/exec";
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
 const INCLUDED_MAX = 5;
@@ -1163,6 +1174,23 @@ function togglePanel() {
 
 function openForm() {
   if (selectionOrder.length === 0) { alert("Please select at least one tournament first."); return; }
+
+  // Require entry level for every tournament
+  const missingLevel = selectionOrder.filter(uid => selectedMap[uid] && !selectedMap[uid].level);
+  if (missingLevel.length > 0) {
+    const names = missingLevel.map(uid => selectedMap[uid]?.name || "Unknown").join("\n  • ");
+    alert("Please select a competition level for each tournament before submitting.\n\nMissing for:\n  • " + names + "\n\nUse the Most Competitive / Competitive / Least Competitive buttons on each slot card.");
+    // Flash the cards that need attention
+    missingLevel.forEach(uid => {
+      const idx = selectionOrder.indexOf(uid);
+      const cards = document.querySelectorAll(".slot-card.needs-level");
+      cards.forEach(c => {
+        c.style.animation = "none";
+        setTimeout(() => { c.style.animation = ""; }, 10);
+      });
+    });
+    return;
+  }
   document.getElementById("revision-fields").style.display = isRevision ? "block" : "none";
   if (isRevision && revisionEmail) document.getElementById("f-email").value = revisionEmail;
   document.getElementById("form-modal-title").textContent = isRevision ? "Submit Your Revisions" : "Your Information";
@@ -1379,7 +1407,7 @@ function renderSlots() {
   const additional = Math.max(0, total - INCLUDED_MAX);
   const TOTAL_SHOWN = Math.max(6, total);
   const LEVELS      = ["Most Competitive","Competitive","Least Competitive"];
-  const LEVEL_SHORT = ["Most","Comp","Least"];
+  const LEVEL_SHORT = ["Most Competitive","Competitive","Least Competitive"];
 
   let html = "";
   for (let idx = 0; idx < TOTAL_SHOWN; idx++) {
@@ -1398,17 +1426,21 @@ function renderSlots() {
     const removeBtn = isFilled ? `<span class="slot-remove-x" onclick="removeSelection('${uid}')" title="Remove">&times;</span>` : "";
 
     let pillsHtml = "";
+    let needsLevel = false;
     if (isFilled) {
-      pillsHtml = `<div class="slot-entry-pills">${LEVELS.map((lv,li) =>
+      needsLevel = !s.level;
+      const levelLabel = `<div class="slot-level-label">${needsLevel ? "Competition Level" : "Competition Level ✓"}</div>`;
+      pillsHtml = levelLabel + `<div class="slot-entry-pills">${LEVELS.map((lv,li) =>
         `<button class="slot-entry-pill${s.level===lv?" active":""}" onclick="setLevelFromSlot('${uid}','${lv}')">${LEVEL_SHORT[li]}</button>`
       ).join("")}</div>`;
     }
 
+    const needsLevelClass = (isFilled && needsLevel) ? " needs-level" : "";
     const body = isFilled
       ? `<div class="slot-name">${s.name}</div><div class="slot-detail">${s.date}${s.location ? " &middot; " + s.location : ""}</div>${pillsHtml}`
       : `<div class="slot-empty-label">${isInvoice ? "Additional" : "Open"}</div>`;
 
-    html += `<div class="${cardClass}">${removeBtn}<div class="slot-top"><span class="slot-num">${slotNum}</span>${tagHtml}</div>${body}</div>`;
+    html += `<div class="${cardClass}${needsLevelClass}">${removeBtn}<div class="slot-top"><span class="slot-num">${slotNum}</span>${tagHtml}</div>${body}</div>`;
   }
   row.innerHTML = html;
 
