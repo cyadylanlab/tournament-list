@@ -1047,7 +1047,7 @@ function toggleCard(i) {
 
 
 // ── APPS SCRIPT URL ───────────────────────────────────────────────────────
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyJknds86y4BtwIhVxP-0a9bn1lfdiFQmPMMZQw4YOIr_SokOJMffP1IJ4jsXHMpZvNxQ/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzpfFvgQ5tSPrGv1Kt-9YF34xewzUfm9iuv4RltVzA9Bh7CsCIe1nGX_NZ4i8FX8Nneg/exec";
 
 // ── CONFIG ────────────────────────────────────────────────────────────────
 const INCLUDED_MAX = 5;
@@ -1074,6 +1074,11 @@ function onRowCheck(chk) {
   const { uid, name, date, month, location } = chk.dataset;
   if (chk.checked) {
     if (!selectedMap[uid]) {
+      // If in replacement mode, this selection is the replacement — exit replacement mode
+      if (inReplacementMode) {
+        inReplacementMode = false;
+        replacingTournament = null;
+      }
       selectedMap[uid] = { name, date, month, location, level: null };
       selectionOrder.push(uid);
     }
@@ -1093,6 +1098,11 @@ function onClubCheck(chk) {
   const rowEl = document.getElementById("club-row-" + uid.replace("club-",""));
   if (chk.checked) {
     if (!selectedMap[uid]) {
+      // If in replacement mode, this selection is the replacement — exit replacement mode
+      if (inReplacementMode) {
+        inReplacementMode = false;
+        replacingTournament = null;
+      }
       selectedMap[uid] = { name, date, month, location, level: null };
       selectionOrder.push(uid);
     }
@@ -1214,6 +1224,8 @@ function closeFormModal() {
 // ── REVISION FLOW ─────────────────────────────────────────────────────────
 let previousSelections = []; // tournaments from last submission
 let droppingUids = new Set(); // uids coach has marked to drop
+let inReplacementMode = false; // true while coach is browsing for a replacement
+let replacingTournament = null; // {tournament, date} being replaced
 
 function startRevision() {
   document.getElementById("revision-overlay").classList.add("open");
@@ -1346,6 +1358,54 @@ function confirmRevisionAndSubmit() {
     }
     openForm();
   }, 150);
+}
+
+
+function confirmRevisionAndBrowse() {
+  // Capture which tournament is being replaced
+  const dropped = previousSelections.find(s => droppingUids.has(s.tournament + "|" + s.date));
+  if (dropped) {
+    replacingTournament = dropped;
+    inReplacementMode = true;
+  }
+
+  confirmRevision(); // loads kept selections, closes modal, calls renderSlots
+
+  // Override slots bar immediately after to show ONLY red→green swap
+  if (inReplacementMode && replacingTournament) {
+    renderSlotsDuringReplacement();
+  }
+}
+
+function renderSlotsDuringReplacement() {
+  const row = document.getElementById("slots-row");
+  if (!row) return;
+  // Switch to flex for arrow layout
+  row.style.display = "flex";
+  row.style.alignItems = "center";
+  row.style.gap = "0";
+  row.style.padding = "16px 20px";
+
+  const s = replacingTournament;
+  row.innerHTML = `
+    <div class="slot-card" style="border:2px solid #ef4444;background:rgba(239,68,68,0.07);flex:1;min-width:0;">
+      <div class="slot-top">
+        <span style="font-size:9px;font-weight:700;color:#ef4444;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;">&#10005; Removing</span>
+      </div>
+      <div class="slot-name" style="text-decoration:line-through;opacity:0.55;color:#ef4444;">${s.tournament}</div>
+      <div class="slot-detail" style="color:#ef4444;opacity:0.7;">${s.date || "TBD"}</div>
+    </div>
+    <div style="flex-shrink:0;padding:0 14px;font-size:26px;color:#ccc;line-height:1;">&#8594;</div>
+    <div class="slot-card" style="border:2px dashed #22c55e;background:rgba(34,197,94,0.05);flex:1;min-width:0;">
+      <div class="slot-top">
+        <span style="font-size:9px;font-weight:700;color:#22c55e;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;">+ Choose Replacement</span>
+      </div>
+      <div style="font-size:11px;color:#22c55e;font-weight:600;margin-top:4px;line-height:1.3;">Select from<br>the list below</div>
+    </div>`;
+
+  // Update right side to reflect replacement mode
+  const countEl = document.getElementById("slots-right-count");
+  if (countEl) countEl.innerHTML = `<div style="font-size:13px;font-weight:700;color:var(--gold);font-family:'Barlow Condensed',sans-serif;letter-spacing:0.04em;">Replacing</div><div style="font-size:11px;color:#555;margin-top:2px;font-family:'Barlow Condensed',sans-serif;">${s.tournament}</div>`;
 }
 
 function confirmRevision() {
@@ -1835,7 +1895,7 @@ renderSlots(); // show empty slots framework on load
         <button onclick="backToRevEmail()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">&larr; Back</button>
         <button onclick="closeRevisionModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Cancel</button>
         <button onclick="confirmRevisionAndSubmit()" style="background:transparent;border:2px solid #22c55e;color:#166534;border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Submit Without Adding More</button>
-        <button onclick="confirmRevision()" class="status-lookup-btn" style="flex:1;">Choose Replacement Tournament &rarr;</button>
+        <button onclick="confirmRevisionAndBrowse()" class="status-lookup-btn" style="flex:1;">Choose Replacement Tournament &rarr;</button>
       </div>
     </div>
   </div>
