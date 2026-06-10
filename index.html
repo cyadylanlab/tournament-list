@@ -1397,6 +1397,7 @@ function confirmRevision() {
 // ── SELECTION SLOTS ───────────────────────────────────────────────────────
 function renderSlots() {
   const row          = document.getElementById("slots-row");
+  if (row) { row.style.display = ""; row.style.alignItems = ""; row.style.gap = ""; }
   const rightCount   = document.getElementById("slots-right-count");
   const rightBreak   = document.getElementById("slots-right-breakdown");
   const listEl       = document.getElementById("slots-right-list");
@@ -1668,67 +1669,54 @@ function renderRevisionPreview() {
   const row = document.getElementById("slots-row");
   if (!row) return;
 
-  const keptList    = previousSelections.filter(s => !droppingUids.has(s.tournament + "|" + s.date));
-  const droppedList = previousSelections.filter(s =>  droppingUids.has(s.tournament + "|" + s.date));
+  const droppedList = previousSelections.filter(s => droppingUids.has(s.tournament + "|" + s.date));
 
-  let html = "";
-  let slotNum = 0;
+  // Switch to flex layout so the arrow fits between red and green cards
+  if (row) { row.style.display = "flex"; row.style.alignItems = "center"; row.style.gap = "0"; }
 
-  // Kept — gold slots
-  keptList.forEach(s => {
-    slotNum++;
-    let tagHtml = "";
-    if (slotNum === 3) tagHtml = `<span class="slot-tag tag-min">Min</span>`;
-    else if (slotNum === 5) tagHtml = `<span class="slot-tag tag-max">Max</span>`;
-    html += `<div class="slot-card filled">
-      <div class="slot-top"><span class="slot-num">${slotNum}</span>${tagHtml}</div>
-      <div class="slot-name">${s.tournament}</div>
-      <div class="slot-detail">${s.date}</div>
+  // Only show the swap: red (removing) → green (open for replacement)
+  // Keep it simple and intentional — not all 5 slots
+  if (droppedList.length === 0) {
+    // Nothing marked for removal yet — show a prompt
+    row.innerHTML = `<div style="padding:20px 14px;color:#aaa;font-size:13px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.04em;">
+      Check a box next to the tournament you want to remove — it will appear here in red.
     </div>`;
-  });
-
-  // Dropped — red strikethrough slots
-  droppedList.forEach(s => {
-    html += `<div class="slot-card" style="border:2px solid #ef4444;background:rgba(239,68,68,0.07);">
-      <div class="slot-top">
-        <span style="font-size:9px;font-weight:700;color:#ef4444;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;">&#10005; Removing</span>
-      </div>
-      <div class="slot-name" style="text-decoration:line-through;opacity:0.5;color:#ef4444;">${s.tournament}</div>
-      <div class="slot-detail" style="color:#ef4444;opacity:0.7;">${s.date}</div>
-    </div>`;
-  });
-
-  // Open slots — green, one per dropped + one extra
-  const openCount = Math.max(1, droppedList.length);
-  for (let i = 0; i < openCount; i++) {
-    const newSlotNum = keptList.length + droppedList.length + i + 1;
-    html += `<div class="slot-card" style="border:2px dashed #22c55e;background:rgba(34,197,94,0.05);">
-      <div class="slot-top">
-        <span style="font-size:9px;font-weight:700;color:#22c55e;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;">+ Open</span>
-      </div>
-      <div class="slot-empty-label" style="color:#22c55e;font-style:normal;font-weight:600;font-size:10.5px;">Add replacement<br><span style="font-size:9px;opacity:0.7;">from the list below</span></div>
-    </div>`;
+  } else {
+    let html = "";
+    droppedList.forEach(s => {
+      // Red "removing" card
+      html += `<div class="slot-card" style="border:2px solid #ef4444;background:rgba(239,68,68,0.07);max-width:300px;">
+        <div class="slot-top">
+          <span style="font-size:9px;font-weight:700;color:#ef4444;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;">&#10005; Removing</span>
+        </div>
+        <div class="slot-name" style="text-decoration:line-through;opacity:0.55;color:#ef4444;">${s.tournament}</div>
+        <div class="slot-detail" style="color:#ef4444;opacity:0.7;">${s.date}</div>
+      </div>`;
+      // Arrow indicator
+      html += `<div style="display:flex;align-items:center;padding:0 8px;font-size:22px;color:#aaa;flex-shrink:0;">&#8594;</div>`;
+      // Green "open" card
+      html += `<div class="slot-card" style="border:2px dashed #22c55e;background:rgba(34,197,94,0.05);max-width:300px;">
+        <div class="slot-top">
+          <span style="font-size:9px;font-weight:700;color:#22c55e;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;text-transform:uppercase;">+ Replacement</span>
+        </div>
+        <div class="slot-empty-label" style="color:#22c55e;font-style:normal;font-weight:600;font-size:11px;margin-top:4px;">Choose from list below</div>
+      </div>`;
+    });
+    row.innerHTML = html;
   }
 
-  row.innerHTML = html;
-
-  // Right side: show what's changing
+  // Right side summary
+  const keptCount = previousSelections.length - droppedList.length;
   const countEl = document.getElementById("slots-right-count");
-  if (countEl) countEl.innerHTML = `${keptList.length} / ${INCLUDED_MAX}<div class="slots-right-label">Keeping</div>`;
+  if (countEl) countEl.innerHTML = `${keptCount} / ${INCLUDED_MAX}<div class="slots-right-label">Keeping</div>`;
 
   const breakdownEl = document.getElementById("slots-right-breakdown");
   if (breakdownEl) {
-    let bd = "";
-    if (droppedList.length > 0) bd += `<span style="color:#ef4444;font-weight:700;">&#10005; ${droppedList.length} removing</span><br>`;
-    bd += `<span style="color:#22c55e;font-weight:700;">+ ${droppedList.length} open slot${droppedList.length !== 1 ? "s" : ""}</span>`;
-    if (droppedList.length === 0) bd = `<span style="color:#aaa;">Check a box to remove</span>`;
-    breakdownEl.innerHTML = bd;
+    breakdownEl.innerHTML = droppedList.length > 0
+      ? `<span style="color:#ef4444;font-weight:700;">&#10005; ${droppedList.length} removing</span><br><span style="color:#22c55e;font-weight:700;">+ ${droppedList.length} open</span>`
+      : `<span style="color:#aaa;">Check a box to mark for removal</span>`;
     breakdownEl.style.display = "block";
   }
-
-  // Update submit button in slots right
-  const submitBtn = document.querySelector(".slots-submit-btn");
-  if (submitBtn) submitBtn.textContent = "Complete Submission →";
 }
 
 
@@ -1847,7 +1835,7 @@ renderSlots(); // show empty slots framework on load
         <button onclick="backToRevEmail()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">&larr; Back</button>
         <button onclick="closeRevisionModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Cancel</button>
         <button onclick="confirmRevisionAndSubmit()" style="background:transparent;border:2px solid #22c55e;color:#166534;border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Submit Without Adding More</button>
-        <button onclick="confirmRevision()" class="status-lookup-btn" style="flex:1;">Continue to Full List &rarr;</button>
+        <button onclick="confirmRevision()" class="status-lookup-btn" style="flex:1;">Choose Replacement Tournament &rarr;</button>
       </div>
     </div>
   </div>
