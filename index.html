@@ -204,7 +204,7 @@
   }
   /* Panel only shows for form/success states — bottom bar is hidden */
   .panel.visible:not(.form-mode):not(.success-mode) { display: none; }
-  .panel.form-mode, .panel.success-mode { transform: translateY(0); display: flex; }
+  .panel.form-mode, .panel.success-mode { transform: translateY(0) !important; display: flex !important; }
   .panel-bar {
     display: flex; align-items: center; justify-content: space-between;
     padding: 12px 24px; cursor: pointer; flex-shrink: 0;
@@ -1174,18 +1174,21 @@ function togglePanel() {
 
 function openForm() {
   const panel = document.getElementById("sel-panel");
-  panel.classList.add("form-mode");
+  panel.classList.add("form-mode", "visible");
   panel.classList.remove("expanded");
+  panel.style.display = "flex";
+  panel.style.transform = "translateY(0)";
   document.getElementById("revision-fields").style.display = isRevision ? "block" : "none";
   if (isRevision && revisionEmail) document.getElementById("f-email").value = revisionEmail;
-  document.body.classList.add("panel-form-active");
+  document.body.classList.add("panel-open", "panel-form-active");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function closeForm() {
   const panel = document.getElementById("sel-panel");
   panel.classList.remove("form-mode");
-  panel.classList.add("expanded");
+  panel.style.display = "";
+  panel.style.transform = "";
   document.body.classList.remove("panel-form-active");
 }
 
@@ -1466,6 +1469,8 @@ function showPanelSuccess() {
   const panel = document.getElementById("sel-panel");
   panel.classList.remove("form-mode","expanded");
   panel.classList.add("success-mode","visible");
+  panel.style.display = "flex";
+  panel.style.transform = "translateY(0)";
   document.body.classList.remove("panel-form-active");
   document.getElementById("panel-toggle-label").textContent = isRevision ? "Revision Submitted \u2713" : "Submitted \u2713";
 
