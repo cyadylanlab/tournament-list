@@ -1235,6 +1235,7 @@ async function lookUpPreviousSelections() {
     document.getElementById("rev-step-1").style.display = "none";
     document.getElementById("rev-step-2").style.display = "block";
     document.getElementById("rev-modal-title").textContent = "Your Current Selections";
+    renderRevisionPreview();
   } catch(e) {
     btn.textContent = "Load My Selections";
     btn.disabled = false;
@@ -1288,6 +1289,7 @@ function toggleDropSelection(key) {
     droppingUids.add(key);
   }
   renderPreviousSelectionsInModal(previousSelections);
+  renderRevisionPreview();
 }
 
 function findTournamentUid(name) {
@@ -1299,6 +1301,12 @@ function findTournamentUid(name) {
     }
   }
   return null;
+}
+
+
+function confirmRevisionAndSubmit() {
+  confirmRevision(); // pre-loads kept selections
+  setTimeout(openForm, 100); // open form immediately after
 }
 
 function confirmRevision() {
@@ -1451,6 +1459,65 @@ function parseStatusCSV(text) {
 }
 
 
+
+// ── REVISION PREVIEW IN SLOTS BAR ────────────────────────────────────────
+function renderRevisionPreview() {
+  const row = document.getElementById("slots-row");
+  if (!row) return;
+
+  const keptList    = previousSelections.filter(s => !droppingUids.has(s.tournament + "|" + s.date));
+  const droppedList = previousSelections.filter(s =>  droppingUids.has(s.tournament + "|" + s.date));
+
+  let html = "";
+
+  // Kept — gold slots
+  keptList.forEach((s, idx) => {
+    const slotNum = idx + 1;
+    let tagHtml = "";
+    if (slotNum === 3) tagHtml = `<span class="slot-tag tag-min">Min</span>`;
+    else if (slotNum === 5) tagHtml = `<span class="slot-tag tag-max">Max</span>`;
+    html += `<div class="slot-card filled">
+      <div class="slot-top"><span class="slot-num">${slotNum}</span>${tagHtml}</div>
+      <div class="slot-name">${s.tournament}</div>
+      <div class="slot-detail">${s.date}</div>
+    </div>`;
+  });
+
+  // Dropped — red slots
+  droppedList.forEach(s => {
+    html += `<div class="slot-card" style="border:1.5px solid #ef4444;background:rgba(239,68,68,0.06);">
+      <div class="slot-top"><span style="font-size:9px;font-weight:700;color:#ef4444;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;">Removing</span></div>
+      <div class="slot-name" style="text-decoration:line-through;opacity:0.5;color:#ef4444;">${s.tournament}</div>
+      <div class="slot-detail" style="color:#ef4444;">${s.date}</div>
+    </div>`;
+  });
+
+  // Open slots (green) for potential additions
+  const totalFilled = keptList.length + droppedList.length;
+  const openCount   = Math.max(INCLUDED_MAX + 1, totalFilled + 1) - totalFilled;
+  for (let i = 0; i < openCount; i++) {
+    html += `<div class="slot-card" style="border:1.5px dashed rgba(34,197,94,0.5);background:rgba(34,197,94,0.04);">
+      <div class="slot-top"><span style="font-size:9px;font-weight:700;color:#22c55e;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.06em;">Open</span></div>
+      <div class="slot-empty-label" style="color:#22c55e;">Add from list</div>
+    </div>`;
+  }
+
+  row.innerHTML = html;
+
+  // Update right side
+  const countEl = document.getElementById("slots-right-count");
+  if (countEl) countEl.innerHTML = `${keptList.length}&nbsp;<span style="font-size:14px;">/ ${INCLUDED_MAX}</span><div class="slots-right-label">Keeping</div>`;
+  const breakdownEl = document.getElementById("slots-right-breakdown");
+  if (breakdownEl) {
+    let bd = droppedList.length > 0
+      ? `<span style="color:#ef4444;">&#10005; ${droppedList.length} removing</span>`
+      : `<span style="color:#aaa;">None removed yet</span>`;
+    breakdownEl.innerHTML = bd;
+    breakdownEl.style.display = "block";
+  }
+}
+
+
 // ── LIVE SHEET FETCH ──────────────────────────────────────────────────────
 async function loadFromSheet() {
   document.getElementById("total-count").textContent = totalCount();
@@ -1564,7 +1631,8 @@ renderSlots(); // show empty slots framework on load
       <div id="rev-prev-list" class="status-results" style="max-height:340px;"></div>
       <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
         <button onclick="backToRevEmail()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">&larr; Back</button>
-        <button onclick="closeRevisionModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Cancel &mdash; No Changes</button>
+        <button onclick="closeRevisionModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Cancel</button>
+        <button onclick="confirmRevisionAndSubmit()" style="background:transparent;border:2px solid #22c55e;color:#166534;border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Submit Without Adding More</button>
         <button onclick="confirmRevision()" class="status-lookup-btn" style="flex:1;">Continue to Full List &rarr;</button>
       </div>
     </div>
