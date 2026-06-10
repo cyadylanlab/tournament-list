@@ -1345,6 +1345,112 @@ function confirmRevision() {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+
+// ── STATUS CHECK ──────────────────────────────────────────────────────────
+const STATUS_CSV_URL = "https://docs.google.com/spreadsheets/d/1nZbY2FV8-9459TTdz4RJ6AAI-uLM1MRfMcSlsj20Itc/gviz/tq?tqx=out:csv&gid=111328286";
+
+const STATUS_MONTH_ORDER = ["August 2026","September 2026","October 2026","November 2026","December 2026","January 2027","February 2027","March 2027","April 2027","May 2027","June 2027","July 2027","Club Event"];
+
+function openStatusModal() {
+  document.getElementById("status-overlay").classList.add("open");
+  setTimeout(() => document.getElementById("status-email-input").focus(), 100);
+}
+
+function closeStatusModal() {
+  document.getElementById("status-overlay").classList.remove("open");
+}
+
+async function fetchStatus() {
+  const email = document.getElementById("status-email-input").value.trim().toLowerCase();
+  if (!email || !email.includes("@")) { alert("Please enter a valid email address."); return; }
+  if (!STATUS_CSV_URL) {
+    document.getElementById("status-results").innerHTML = '<div class="status-empty">Status checking is not yet active. Please check back later or contact club staff.</div>';
+    return;
+  }
+
+  const resultsEl = document.getElementById("status-results");
+  resultsEl.innerHTML = '<div class="status-empty">Loading…</div>';
+
+  try {
+    const res  = await fetch(STATUS_CSV_URL);
+    const text = await res.text();
+    const rows = parseStatusCSV(text);
+    const mine = rows.filter(r => (r.email||"").toLowerCase() === email);
+
+    if (mine.length === 0) {
+      resultsEl.innerHTML = '<div class="status-empty">No submissions found for this email address. Make sure you are using the same email you submitted with, or contact club staff.</div>';
+      return;
+    }
+
+    const grouped = {};
+    mine.forEach(r => {
+      const m = r.month || "Other";
+      if (!grouped[m]) grouped[m] = [];
+      grouped[m].push(r);
+    });
+
+    const teamName  = mine[0].team  || "";
+    const coachName = mine[0].coachName || "";
+    let html = `<div class="status-team-header">${coachName} &nbsp;&middot;&nbsp; ${teamName}</div>`;
+
+    STATUS_MONTH_ORDER.forEach(function(month) {
+      if (!grouped[month]) return;
+      html += `<div class="status-month-label">${month}</div>`;
+      grouped[month].forEach(function(r) {
+        const statusKey   = (r.status || "Pending").toLowerCase().replace(/\s+/g, "-");
+        const statusClass = { "pending":"s-pending","applied":"s-applied","accepted":"s-accepted","declined":"s-declined","waitlisted":"s-waitlisted","cancelled":"s-declined" }[statusKey] || "s-pending";
+        const notesHtml   = r.notes ? `<div class="status-notes">${r.notes}</div>` : "";
+        html += `<div class="status-item">
+          <div>
+            <div class="status-tournament-name">${r.tournament}</div>
+            <div class="status-date">${r.date}</div>
+            ${notesHtml}
+          </div>
+          <span class="status-badge ${statusClass}">${r.status || "Pending"}</span>
+        </div>`;
+      });
+    });
+
+    resultsEl.innerHTML = html;
+  } catch(e) {
+    resultsEl.innerHTML = '<div class="status-empty">Could not load status data. Please try again or contact club staff.</div>';
+  }
+}
+
+function parseStatusCSV(text) {
+  const rows = [];
+  let row = [], field = "", inQuote = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i], next = text[i+1];
+    if (inQuote) {
+      if (c === '"' && next === '"') { field += '"'; i++; }
+      else if (c === '"') inQuote = false;
+      else field += c;
+    } else {
+      if (c === '"') inQuote = true;
+      else if (c === ',') { row.push(field); field = ""; }
+      else if (c === '\n' || (c === '\r' && next === '\n')) {
+        row.push(field); field = "";
+        if (row.some(f => f)) rows.push(row);
+        row = []; if (c === '\r') i++;
+      } else field += c;
+    }
+  }
+  if (field || row.length) { row.push(field); if (row.some(f => f)) rows.push(row); }
+
+  return rows.slice(1).map(function(r) { return {
+    email:      r[0] || "",
+    coachName:  r[1] || "",
+    team:       r[2] || "",
+    tournament: r[3] || "",
+    month:      r[4] || "",
+    date:       r[5] || "",
+    status:     r[6] || "Pending",
+    notes:      r[7] || ""
+  }; });
+}
+
+
 // ── LIVE SHEET FETCH ──────────────────────────────────────────────────────
 async function loadFromSheet() {
   document.getElementById("total-count").textContent = totalCount();
