@@ -1096,6 +1096,20 @@ function positionModalAtClick(modalEl) {
   } catch (err) { /* fallback position already set */ }
 }
 
+// ── ALERT MODAL ───────────────────────────────────────────────────────────
+// Styled replacement for native alert() — keeps branding, and positions in the
+// visible window like every other modal (native alerts also leak the GitHub
+// Pages origin in their title bar, which looks off inside the Wix embed).
+function showAlert(message, title) {
+  document.getElementById("alert-modal-title").textContent = title || "Heads Up";
+  document.getElementById("alert-modal-body").textContent = message;
+  positionModalAtClick(document.getElementById("alert-modal"));
+  document.getElementById("alert-overlay").classList.add("open");
+}
+function closeAlertModal() {
+  document.getElementById("alert-overlay").classList.remove("open");
+}
+
 // ── SELECTION STATE ───────────────────────────────────────────────────────
 let selectedMap   = {};   // uid → { name, date, month, location, level }
 let selectionOrder = [];  // UIDs in order checked — first 5 = included
@@ -1310,13 +1324,13 @@ function renderRevisionChangesSummary() {
 }
 
 function openForm() {
-  if (selectionOrder.length === 0) { alert("Please select at least one tournament first."); return; }
+  if (selectionOrder.length === 0) { showAlert("Please select at least one tournament first."); return; }
 
   // Require entry level for every tournament
   const missingLevel = selectionOrder.filter(uid => selectedMap[uid] && !selectedMap[uid].level);
   if (missingLevel.length > 0) {
     const names = missingLevel.map(uid => selectedMap[uid]?.name || "Unknown").join("\n  • ");
-    alert("Please select a competition level for each tournament before submitting.\n\nMissing for:\n  • " + names + "\n\nUse the Most Competitive / Competitive / Least Competitive buttons on each slot card.");
+    showAlert("Please select a competition level for each tournament before submitting.\n\nMissing for:\n  \u2022 " + names + "\n\nUse the Most Competitive / Competitive / Least Competitive buttons on each slot card.", "Competition Level Needed");
     // Flash the cards that need attention
     missingLevel.forEach(uid => {
       const idx = selectionOrder.indexOf(uid);
@@ -1400,7 +1414,7 @@ function backToRevEmail() {
 
 async function lookUpPreviousSelections() {
   const email = document.getElementById("revision-email-input").value.trim().toLowerCase();
-  if (!email || !email.includes("@")) { alert("Please enter a valid email address."); return; }
+  if (!email || !email.includes("@")) { showAlert("Please enter a valid email address."); return; }
 
   const btn = document.getElementById("rev-lookup-btn");
   btn.textContent = "Loading...";
@@ -1510,7 +1524,7 @@ function confirmRevisionAndSubmit() {
   // Small delay to let DOM settle, then open form
   setTimeout(function() {
     if (selectionOrder.length === 0) {
-      alert("No tournaments remaining after removing. Please keep at least one.");
+      showAlert("No tournaments remaining after removing. Please keep at least one.");
       return;
     }
     openForm();
@@ -1739,9 +1753,9 @@ async function submitSelections() {
   const team     = age && gender && level ? age+" "+gender+" "+level : "";
   const revNotes = document.getElementById("f-rev-notes") ? document.getElementById("f-rev-notes").value.trim() : "";
 
-  if (!coach||!age||!gender||!level||!email) { alert("Please fill in all fields before submitting."); return; }
-  if (!email.includes("@")) { alert("Please enter a valid email address."); return; }
-  if (selectionOrder.length===0) { alert("Please select at least one tournament."); return; }
+  if (!coach||!age||!gender||!level||!email) { showAlert("Please fill in all fields before submitting."); return; }
+  if (!email.includes("@")) { showAlert("Please enter a valid email address."); return; }
+  if (selectionOrder.length===0) { showAlert("Please select at least one tournament."); return; }
 
   const includedUids   = selectionOrder.slice(0, INCLUDED_MAX);
   const additionalUids = selectionOrder.slice(INCLUDED_MAX);
@@ -1771,7 +1785,7 @@ async function submitSelections() {
     await fetch(APPS_SCRIPT_URL, { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload), mode:"no-cors" });
     showPanelSuccess();
   } catch(e) {
-    alert("Something went wrong. Please try again or contact Dylan.");
+    showAlert("Something went wrong. Please try again or contact Dylan.", "Submission Error");
     btn.disabled=false; btn.textContent="Send My Selections";
   }
 }
@@ -1816,7 +1830,7 @@ function closeStatusModal() {
 
 async function fetchStatus() {
   const email = document.getElementById("status-email-input").value.trim().toLowerCase();
-  if (!email || !email.includes("@")) { alert("Please enter a valid email address."); return; }
+  if (!email || !email.includes("@")) { showAlert("Please enter a valid email address."); return; }
   if (!STATUS_CSV_URL) {
     document.getElementById("status-results").innerHTML = '<div class="status-empty">Status checking is not yet active. Please check back later or contact club staff.</div>';
     return;
@@ -1998,6 +2012,20 @@ async function loadFromSheet() {
 loadFromSheet();
 renderSlots(); // show empty slots framework on load
 </script>
+
+<!-- ALERT MODAL (styled replacement for native alert) -->
+<div class="status-modal-overlay" id="alert-overlay" style="z-index:500;" onclick="if(event.target===this)closeAlertModal()">
+  <div class="status-modal" id="alert-modal" style="max-width:440px;">
+    <div class="status-modal-header">
+      <div class="status-modal-title" id="alert-modal-title">Heads Up</div>
+      <button class="status-modal-close" onclick="closeAlertModal()">&times;</button>
+    </div>
+    <div id="alert-modal-body" style="padding:18px 24px;font-size:14px;color:#333;line-height:1.6;white-space:pre-line;overflow-y:auto;flex:1;min-height:0;"></div>
+    <div style="padding:0 24px 20px;flex-shrink:0;">
+      <button class="form-send-btn" onclick="closeAlertModal()" style="width:100%;margin:0;border-radius:6px;">OK</button>
+    </div>
+  </div>
+</div>
 
 <!-- SUBMISSION FORM MODAL -->
 <div class="status-modal-overlay" id="form-overlay" onclick="if(event.target===this)closeFormModal()">
