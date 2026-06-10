@@ -48,9 +48,27 @@
   .tab-count { font-size: 10px; background: #eee; color: #aaa; border-radius: 10px; padding: 1px 6px; font-family: 'Barlow', sans-serif; font-weight: 700; transition: all 0.15s; }
   .tab-btn.active .tab-count { background: var(--gold-bg); color: var(--gold); }
 
-  /* Tabs moved inside the content column — directly above the tournament list */
-  .content-tabs { border: 1px solid var(--border); border-radius: 8px; margin: 24px 0 18px; }
-  .content-tabs .tabs { max-width: none; margin: 0; padding: 0 8px; }
+  /* Month navigation — chunky labeled buttons directly above the tournament list */
+  .month-nav-section { border: 1px solid var(--border); border-radius: 8px; margin: 24px 0 18px; background: var(--bg2); padding: 14px 16px; }
+  .month-nav-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; color: var(--muted2); text-transform: uppercase; font-family: 'Barlow Condensed', sans-serif; margin-bottom: 10px; }
+  .month-nav { display: flex; flex-wrap: wrap; gap: 8px; }
+  .month-btn { background: #fff; border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 14px; cursor: pointer; text-align: left; transition: all 0.15s; min-width: 118px; }
+  .month-btn:hover { border-color: var(--gold); }
+  .month-btn.active { border-color: var(--gold); background: var(--gold-bg); }
+  .month-btn-name { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 0.08em; color: #444; }
+  .month-btn.active .month-btn-name { color: var(--gold); }
+  .month-btn-count { display: block; font-size: 11.5px; color: #999; font-family: 'Barlow Condensed', sans-serif; margin-top: 2px; }
+  .month-btn.active .month-btn-count { color: var(--gold); }
+
+  /* Coach dashboard */
+  .dash-card { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 18px 22px; margin: 22px 0 4px; }
+  .dash-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+  .dash-title { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.06em; color: #222; }
+  .dash-sub { font-size: 12px; color: var(--muted2); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; text-transform: uppercase; }
+  .dash-switch { font-size: 12px; color: var(--muted2); font-family: 'Barlow Condensed', sans-serif; cursor: pointer; text-decoration: underline; background: none; border: none; padding: 0; }
+  .dash-summary { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+  .dash-chip { font-size: 11px; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.06em; border-radius: 12px; padding: 3px 10px; background: #f3f3f3; color: #777; }
+  .dash-note { font-size: 11.5px; color: #aaa; font-family: 'Barlow Condensed', sans-serif; margin-top: 10px; }
 
   /* CONTENT */
   .content { max-width: 1200px; margin: 0 auto; padding: 24px 32px 60px; }
@@ -531,6 +549,11 @@
     /* MONTH TABS */
     .tabs { padding: 0 10px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .tab-btn { padding: 10px 10px 8px; font-size: 12px; white-space: nowrap; }
+    .month-btn { flex: 1 1 calc(33.3% - 8px); min-width: 0; padding: 8px 10px; }
+    .month-btn-name { font-size: 13px; }
+    .month-btn-count { font-size: 10.5px; }
+    #dash-email-input { flex: 1 1 100%; max-width: none !important; }
+    .dash-card { padding: 14px 14px; }
 
     /* FILTER ROW */
     .month-header { flex-direction: column; align-items: flex-start; gap: 8px; }
@@ -632,13 +655,17 @@
         <span class="season">2026–27 SEASON</span>
       </div>
       <h1>Tournament Guidance List and Selection for the 2026–2027 Season</h1>
-    <div class="header-action-btns" style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
-      <button onclick="openStatusModal()" style="
+    <div class="header-action-btns" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:stretch;">
+      <input id="dash-email-input" type="email" placeholder="Coach email — view your selections &amp; status"
+        style="flex:1 1 260px;max-width:360px;padding:10px 14px;border:1.5px solid var(--border);border-radius:6px;font-family:'Barlow',sans-serif;font-size:13.5px;color:#333;outline:none;"
+        onfocus="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'"
+        onkeydown="if(event.key==='Enter')loadDashboard()">
+      <button onclick="loadDashboard()" style="
         background:var(--gold);color:#fff;border:none;border-radius:6px;
         padding:10px 20px;font-family:'Bebas Neue',sans-serif;font-size:16px;
         letter-spacing:0.1em;cursor:pointer;transition:background 0.15s;
       " onmouseover="this.style.background='#8a6800'" onmouseout="this.style.background='var(--gold)'">
-        My Selections — Check Status / Make Changes
+        View My Selections
       </button>
     </div>
     </div>
@@ -651,6 +678,9 @@
 </div>
 
 <div class="content">
+
+  <!-- COACH DASHBOARD (renders when a coach enters their email) -->
+  <div id="coach-dashboard" style="display:none;"></div>
 
   <!-- SELECTION SLOTS -->
   <div class="slots-bar" id="slots-bar">
@@ -692,8 +722,11 @@
     </div>
   </div>
 
-  <!-- MONTH TABS — directly above the tournament list they control -->
-  <div class="tabs-wrap content-tabs"><div class="tabs" id="tabs"></div></div>
+  <!-- MONTH NAVIGATION — directly above the tournament list it controls -->
+  <div class="month-nav-section">
+    <div class="month-nav-label">Browse Tournaments by Month</div>
+    <div class="month-nav" id="tabs"></div>
+  </div>
 
   <div class="month-header">
     <div>
@@ -916,14 +949,17 @@ function levelBadge(l) { return `<span class="level-badge ${LEVEL_CLS[l]||'level
 // ── TABS ──────────────────────────────────────────────────────────────────
 function buildTabs() {
   document.getElementById("tabs").innerHTML = MONTHS.map((m,i) =>
-    `<button class="tab-btn ${i===0?'active':''}" id="tab-${i}" onclick="switchMonth(${i})">${m.short} <span class="tab-count">${m.tournaments.length}</span></button>`
+    `<button class="month-btn ${i===0?'active':''}" id="tab-${i}" onclick="switchMonth(${i})">
+      <span class="month-btn-name">${m.label.toUpperCase()}</span>
+      <span class="month-btn-count">${m.tournaments.length} event${m.tournaments.length===1?'':'s'}</span>
+    </button>`
   ).join("");
 }
 
 function switchMonth(idx) {
   activeMonth = idx; activeFilter = "all";
   document.getElementById("search").value = "";
-  document.querySelectorAll(".tab-btn").forEach((b,i) => b.classList.toggle("active", i===idx));
+  document.querySelectorAll(".month-btn").forEach((b,i) => b.classList.toggle("active", i===idx));
   setFilter("all", false);
   renderMonth();
 }
@@ -1380,6 +1416,134 @@ let droppingUids = new Set(); // uids coach has marked to drop
 let inReplacementMode = false; // true while coach is browsing for a replacement
 let replacingTournament = null; // {tournament, date} being replaced
 let swapPairs = []; // [{removed:{tournament,date}, added:{tournament,date}}] — one-to-one replacements this revision
+
+// ── COACH DASHBOARD ───────────────────────────────────────────────────────
+// The header email box is the front door: type email → see your selections,
+// statuses, and a Make Changes button, inline on the page. Identification
+// only (no auth) — same visibility model as the previous status check.
+let dashEmail = "";
+
+async function loadDashboard() {
+  const input = document.getElementById("dash-email-input");
+  const email = (input.value || "").trim().toLowerCase();
+  if (!email || !email.includes("@")) { showAlert("Please enter a valid email address."); return; }
+  dashEmail = email;
+  try { localStorage.setItem("valorCoachEmail", email); } catch(e) { /* blocked storage is fine */ }
+
+  const dash = document.getElementById("coach-dashboard");
+  dash.style.display = "block";
+  dash.innerHTML = `<div class="dash-card"><div class="status-empty">Loading your selections…</div></div>`;
+  try { dash.scrollIntoView({ behavior: "smooth", block: "start" }); } catch(e) {}
+
+  try {
+    const rows = await fetchAllStatusRows();
+    const mine = rows.filter(r => (r.email || "").toLowerCase() === email);
+    renderDashboard(mine, email);
+  } catch(e) {
+    dash.innerHTML = `<div class="dash-card"><div class="status-empty">Could not load your selections right now. Please try again in a moment.</div></div>`;
+  }
+}
+
+function renderDashboard(mine, email) {
+  const dash = document.getElementById("coach-dashboard");
+
+  if (mine.length === 0) {
+    dash.innerHTML = `<div class="dash-card">
+      <div class="dash-head">
+        <div>
+          <div class="dash-title">No Selections Found</div>
+          <div class="dash-sub">${email}</div>
+        </div>
+        <button class="dash-switch" onclick="resetDashboard()">Not you? Change email</button>
+      </div>
+      <div style="font-size:13.5px;color:var(--muted);line-height:1.6;">
+        We couldn't find any tournament selections under this email. If you just submitted, new selections can take a few minutes to appear — <span style="color:var(--gold);cursor:pointer;text-decoration:underline;" onclick="loadDashboard()">refresh</span> shortly.
+        Otherwise, browse the tournament list below and make your selections.
+      </div>
+    </div>`;
+    return;
+  }
+
+  // Make Changes path reuses the revision flow with this data preloaded
+  statusRowsForRevision  = mine;
+  statusEmailForRevision = email;
+
+  const coachName = mine[0].coachName || "";
+  const teamName  = mine[0].team || "";
+
+  // Summary chips: active count + per-status counts
+  const counts = {};
+  let active = 0;
+  mine.forEach(r => {
+    const s = (r.status || "Pending").trim();
+    counts[s] = (counts[s] || 0) + 1;
+    if (s.toLowerCase() !== "cancelled") active++;
+  });
+  const chipColors = {
+    "Pending":"background:#eef2ff;color:#4338ca;", "Applied":"background:#eff6ff;color:#1d4ed8;",
+    "Accepted":"background:#f0fdf4;color:#166534;", "Declined":"background:#fef2f2;color:#991b1b;",
+    "Waitlisted":"background:#fffbeb;color:#92400e;", "Cancelled":"background:#f3f3f3;color:#999;"
+  };
+  let chips = `<span class="dash-chip" style="background:var(--gold-bg);color:var(--gold);">${active} Active Selection${active===1?'':'s'}</span>`;
+  Object.keys(counts).forEach(s => {
+    chips += `<span class="dash-chip" style="${chipColors[s]||''}">${counts[s]} ${s}</span>`;
+  });
+
+  // Grouped list — same patterns as the status view
+  const grouped = {};
+  mine.forEach(r => { const m = r.month || "Other"; (grouped[m] = grouped[m] || []).push(r); });
+  const order = STATUS_MONTH_ORDER.filter(m => grouped[m])
+    .concat(Object.keys(grouped).filter(m => !STATUS_MONTH_ORDER.includes(m)));
+
+  let list = "";
+  order.forEach(month => {
+    list += `<div class="status-month-label">${month}</div>`;
+    grouped[month].forEach(r => {
+      const sKey = (r.status || "Pending").toLowerCase().replace(/\s+/g, "-");
+      const sCls = { "pending":"s-pending","applied":"s-applied","accepted":"s-accepted","declined":"s-declined","waitlisted":"s-waitlisted","cancelled":"s-declined" }[sKey] || "s-pending";
+      const notesHtml = r.notes ? `<div class="status-notes">${r.notes}</div>` : "";
+      const levelHtml = r.level ? ` &middot; ${r.level}` : "";
+      const revBadge = r.selectionType === "Revised"
+        ? `<span style="font-size:9px;font-weight:700;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:3px;padding:1px 5px;margin-left:6px;letter-spacing:0.05em;font-family:'Barlow Condensed',sans-serif;vertical-align:middle;">REVISED</span>` : "";
+      list += `<div class="status-item">
+        <div>
+          <div class="status-tournament-name">${r.tournament}${revBadge}</div>
+          <div class="status-date">${r.date}${levelHtml}</div>
+          ${notesHtml}
+        </div>
+        <span class="status-badge ${sCls}">${r.status || "Pending"}</span>
+      </div>`;
+    });
+  });
+
+  dash.innerHTML = `<div class="dash-card">
+    <div class="dash-head">
+      <div>
+        <div class="dash-title">${coachName}</div>
+        <div class="dash-sub">${teamName} &nbsp;&middot;&nbsp; ${email}</div>
+      </div>
+      <button class="dash-switch" onclick="resetDashboard()">Not you? Change email</button>
+    </div>
+    <div class="dash-summary">${chips}</div>
+    ${list}
+    <div style="margin-top:16px;">
+      <button onclick="switchToRevision()" style="width:100%;background:transparent;color:var(--gold);border:2px solid var(--gold);border-radius:6px;padding:11px 20px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.1em;cursor:pointer;transition:all 0.15s;"
+        onmouseover="this.style.background='var(--gold-bg)'" onmouseout="this.style.background='transparent'">Make Changes to My Selections &rarr;</button>
+    </div>
+    <div class="dash-note">Just submitted or revised? Updates can take a few minutes to appear here — <span style="color:var(--gold);cursor:pointer;text-decoration:underline;" onclick="loadDashboard()">refresh</span>. Statuses are updated by club staff as applications are processed.</div>
+  </div>`;
+}
+
+function resetDashboard() {
+  dashEmail = "";
+  try { localStorage.removeItem("valorCoachEmail"); } catch(e) {}
+  const dash = document.getElementById("coach-dashboard");
+  dash.style.display = "none";
+  dash.innerHTML = "";
+  const input = document.getElementById("dash-email-input");
+  input.value = "";
+  input.focus();
+}
 
 // Data carried from the status check into the revision flow ("Make Changes" path)
 let statusRowsForRevision  = null;
@@ -2062,6 +2226,16 @@ async function loadFromSheet() {
 }
 
 loadFromSheet();
+
+// Returning coach: prefill remembered email and reopen their dashboard.
+// Storage may be blocked inside the Wix iframe (e.g. Safari) — fail silently.
+try {
+  const savedCoachEmail = localStorage.getItem("valorCoachEmail");
+  if (savedCoachEmail) {
+    document.getElementById("dash-email-input").value = savedCoachEmail;
+    loadDashboard();
+  }
+} catch(e) {}
 renderSlots(); // show empty slots framework on load
 </script>
 
