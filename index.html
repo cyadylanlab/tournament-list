@@ -48,6 +48,10 @@
   .tab-count { font-size: 10px; background: #eee; color: #aaa; border-radius: 10px; padding: 1px 6px; font-family: 'Barlow', sans-serif; font-weight: 700; transition: all 0.15s; }
   .tab-btn.active .tab-count { background: var(--gold-bg); color: var(--gold); }
 
+  /* Tabs moved inside the content column — directly above the tournament list */
+  .content-tabs { border: 1px solid var(--border); border-radius: 8px; margin: 24px 0 18px; }
+  .content-tabs .tabs { max-width: none; margin: 0; padding: 0 8px; }
+
   /* CONTENT */
   .content { max-width: 1200px; margin: 0 auto; padding: 24px 32px 60px; }
   .month-header { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
@@ -653,23 +657,7 @@
   </div>
 </div>
 
-<div class="tabs-wrap"><div class="tabs" id="tabs"></div></div>
-
 <div class="content">
-  <div class="month-header">
-    <div>
-      <div class="month-title" id="month-title"></div>
-      <div class="month-deadline" id="month-deadline"></div>
-    </div>
-    <div class="filters">
-      <input class="search-input" id="search" type="text" placeholder="Search tournaments…" oninput="applyFilters()">
-      <button class="filter-btn active-all" data-filter="all" onclick="setFilter('all')">All</button>
-      <button class="filter-btn" data-filter="recommended" onclick="setFilter('recommended')">✓ Valor Picks</button>
-      <button class="filter-btn" data-filter="be-aware" onclick="setFilter('be-aware')">ℹ A Few Things to Know</button>
-      <button class="filter-btn" data-filter="club-event" onclick="setFilter('club-event')">★ Club Event</button>
-      <button class="filter-btn" data-filter="not-recommended" onclick="setFilter('not-recommended')">! Consider Carefully</button>
-    </div>
-  </div>
 
   <!-- SELECTION SLOTS -->
   <div class="slots-bar" id="slots-bar">
@@ -711,7 +699,23 @@
     </div>
   </div>
 
+  <!-- MONTH TABS — directly above the tournament list they control -->
+  <div class="tabs-wrap content-tabs"><div class="tabs" id="tabs"></div></div>
 
+  <div class="month-header">
+    <div>
+      <div class="month-title" id="month-title"></div>
+      <div class="month-deadline" id="month-deadline"></div>
+    </div>
+    <div class="filters">
+      <input class="search-input" id="search" type="text" placeholder="Search tournaments…" oninput="applyFilters()">
+      <button class="filter-btn active-all" data-filter="all" onclick="setFilter('all')">All</button>
+      <button class="filter-btn" data-filter="recommended" onclick="setFilter('recommended')">✓ Valor Picks</button>
+      <button class="filter-btn" data-filter="be-aware" onclick="setFilter('be-aware')">ℹ A Few Things to Know</button>
+      <button class="filter-btn" data-filter="club-event" onclick="setFilter('club-event')">★ Club Event</button>
+      <button class="filter-btn" data-filter="not-recommended" onclick="setFilter('not-recommended')">! Consider Carefully</button>
+    </div>
+  </div>
 
   <div class="table-wrap">
     <table>
