@@ -1947,8 +1947,8 @@ function renderSelectionList() {
 }
 
 // ── TEAM DESIGNATION ──────────────────────────────────────────────────────
-// Club-standard naming: "Valor {Level} {B|G}{birth years}" for the 2026-27 season
-// e.g. U12 Boys Pre-ECNL → "Valor Pre-ECNL B2014/15"
+// Club-standard naming: "Valor {Age} {Level} {B|G}{birth years}" for the 2026-27 season
+// e.g. U12 Boys Pre-ECNL → "Valor U12 Pre-ECNL B2014/15"
 const AGE_BIRTH_YEARS = {
   "U9":"2017/18", "U10":"2016/17", "U11":"2015/16", "U12":"2014/15",
   "U13":"2013/14", "U14":"2012/13", "U15":"2011/12", "U16":"2010/11",
@@ -1959,7 +1959,7 @@ function buildTeamDesignation(age, gender, level) {
   const years = AGE_BIRTH_YEARS[age];
   if (!years) return age + " " + gender + " " + level; // fallback for anything unmapped
   const g = gender.charAt(0).toUpperCase(); // B / G
-  return "Valor " + level + " " + g + years;
+  return "Valor " + age + " " + level + " " + g + years;
 }
 
 // ── SUBMIT ────────────────────────────────────────────────────────────────
