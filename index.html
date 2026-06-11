@@ -1132,11 +1132,31 @@ function positionModalAtClick(modalEl) {
 function showAlert(message, title) {
   document.getElementById("alert-modal-title").textContent = title || "Heads Up";
   document.getElementById("alert-modal-body").textContent = message;
+  const okWrapStd = document.getElementById("alert-ok-wrap");
+  if (okWrapStd) okWrapStd.style.display = "block";
   positionModalAtClick(document.getElementById("alert-modal"));
   document.getElementById("alert-overlay").classList.add("open");
 }
 function closeAlertModal() {
   document.getElementById("alert-overlay").classList.remove("open");
+  // restore standard alert layout in case the already-submitted interstitial customized it
+  const okWrap = document.getElementById("alert-ok-wrap");
+  if (okWrap) okWrap.style.display = "block";
+}
+
+// "Submissions already complete" interstitial — shown when a coach who already
+// has selections on file tries to submit a fresh set through the main form.
+function showAlreadySubmitted(count, email) {
+  document.getElementById("alert-modal-title").textContent = "Submissions Already Complete";
+  document.getElementById("alert-modal-body").innerHTML =
+    `<div style="line-height:1.6;">We already have <strong>${count} tournament selection${count===1?'':'s'}</strong> on file for <strong>${email}</strong>.</div>
+     <div style="line-height:1.6;margin-top:10px;">To make changes, use the revise flow — you'll see your current selections and choose what to keep, drop, or replace. <span style="color:#999;">(The tournaments you just picked on this page will be cleared so you can work from your submitted list.)</span></div>
+     <button onclick="closeAlertModal();closeFormModal();switchToRevision()" style="width:100%;margin-top:16px;background:var(--gold);color:#fff;border:none;border-radius:6px;padding:12px 20px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:0.1em;cursor:pointer;">Review &amp; Revise My Selections &rarr;</button>
+     <button onclick="closeAlertModal()" style="width:100%;margin-top:8px;background:transparent;color:var(--muted2);border:1px solid var(--border);border-radius:6px;padding:10px 20px;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:0.06em;cursor:pointer;">Go Back</button>`;
+  const okWrap = document.getElementById("alert-ok-wrap");
+  if (okWrap) okWrap.style.display = "none";
+  positionModalAtClick(document.getElementById("alert-modal"));
+  document.getElementById("alert-overlay").classList.add("open");
 }
 
 // ── SELECTION STATE ───────────────────────────────────────────────────────
@@ -1976,6 +1996,29 @@ async function submitSelections() {
   if (!email.includes("@")) { showAlert("Please enter a valid email address."); return; }
   if (selectionOrder.length===0) { showAlert("Please select at least one tournament."); return; }
 
+  // Forgetful-coach guard: if this email already has selections on file and
+  // they're NOT in the revision flow, stop and route them to Revise instead of
+  // silently replacing their previous set. (If the feed is unreachable or stale,
+  // the backend's auto-reconcile still prevents duplicate rows.)
+  if (!isRevision) {
+    const sendBtnCheck = document.getElementById("form-send-btn");
+    const prevLabel = sendBtnCheck.textContent;
+    sendBtnCheck.disabled = true; sendBtnCheck.textContent = "Checking…";
+    let existing = [];
+    try {
+      const allRows = await fetchAllStatusRows();
+      existing = allRows.filter(r => (r.email || "").toLowerCase() === email.toLowerCase());
+    } catch(e) { /* proceed — backend reconciles as the safety net */ }
+    sendBtnCheck.disabled = false; sendBtnCheck.textContent = prevLabel;
+    const activeExisting = existing.filter(r => (r.status || "").toLowerCase() !== "cancelled");
+    if (activeExisting.length > 0) {
+      statusRowsForRevision  = existing;
+      statusEmailForRevision = email.toLowerCase();
+      showAlreadySubmitted(activeExisting.length, email);
+      return;
+    }
+  }
+
   const includedUids   = selectionOrder.slice(0, INCLUDED_MAX);
   const additionalUids = selectionOrder.slice(INCLUDED_MAX);
   const makeObj = uid => { const s=selectedMap[uid]; return { tournament:s.name, month:s.month, date:s.date, location:s.location, entryLevel:s.level||"Not specified" }; };
@@ -2282,7 +2325,7 @@ renderSlots(); // show empty slots framework on load
       <button class="status-modal-close" onclick="closeAlertModal()">&times;</button>
     </div>
     <div id="alert-modal-body" style="padding:18px 24px;font-size:14px;color:#333;line-height:1.6;white-space:pre-line;overflow-y:auto;flex:1;min-height:0;"></div>
-    <div style="padding:0 24px 20px;flex-shrink:0;">
+    <div id="alert-ok-wrap" style="padding:0 24px 20px;flex-shrink:0;">
       <button class="form-send-btn" onclick="closeAlertModal()" style="width:100%;margin:0;border-radius:6px;">OK</button>
     </div>
   </div>
