@@ -1100,33 +1100,58 @@ const CLUB_EVENT_IDS = ["club-presidents-cup","club-state-cup"];
 let lastPointerY = 0;
 document.addEventListener("pointerdown", function(e) { lastPointerY = e.pageY; }, true);
 
-function positionModalAtClick(modalEl) {
+// The page lives in a Wix iframe. Depending on the device the iframe is either
+// sized to full content height (parent scrolls) or a fixed window (iframe
+// scrolls). Either way, a position:fixed overlay is pinned to that iframe
+// viewport, so we measure the slice the user can actually see with an
+// IntersectionObserver (works across the cross-origin boundary) and pin the
+// modal to the TOP of that slice. We do NOT add window.scrollY — the observer's
+// intersection rect is already in the overlay's coordinate space, and adding the
+// scroll offset double-counts it and pushes the modal off the bottom.
+let activeModalEl = null;
+
+function placeModalInViewport(modalEl) {
   if (!modalEl) return;
-  // Inside the Wix iframe the page is sized to full content height (desktop AND
-  // mobile), so a normally-centered modal lands in the middle of the whole tall
-  // page — off-screen. We pin the modal to the TOP of the slice the user can
-  // actually see (measured with IntersectionObserver, which works across the
-  // cross-origin iframe boundary) so it is always in view with no scrolling.
-
-  // Safe pre-measure default: top of the page. If the observer somehow doesn't
-  // report, the modal sits at the top rather than somewhere far down the page.
-  modalEl.style.marginTop = "12px";
-
   try {
     const obs = new IntersectionObserver(function(entries) {
       obs.disconnect();
       const e = entries[0];
       if (!e || !e.intersectionRect || e.intersectionRect.height <= 0) return;
-      const vTop = e.intersectionRect.top + window.scrollY; // page-Y of the top of the visible window
-      const vH   = e.intersectionRect.height;               // height of the visible window
-      // Cap height so a long list scrolls inside the modal instead of the page
-      modalEl.style.maxHeight = Math.max(300, vH - 32) + "px";
-      // Pin to the very top of the visible area
+      const vTop = e.intersectionRect.top;    // top of the visible slice, in the fixed overlay's coords
+      const vH   = e.intersectionRect.height; // height of the visible slice
+      // Cap height so a long form/list scrolls inside the modal, not the page
+      modalEl.style.maxHeight = Math.max(280, vH - 24) + "px";
+      // Pin to the very top of what the user can see
       modalEl.style.marginTop = Math.max(12, vTop + 12) + "px";
     });
     obs.observe(document.documentElement);
   } catch (err) { /* top-of-page fallback already set */ }
 }
+
+function positionModalAtClick(modalEl) {
+  if (!modalEl) return;
+  activeModalEl = modalEl;
+  modalEl.style.marginTop = "12px"; // safe default before measurement: top
+  placeModalInViewport(modalEl);
+}
+
+// Keep whichever modal is open pinned to the visible area as the user scrolls or
+// the viewport resizes, so a single imperfect first measurement self-corrects.
+(function () {
+  let pending = null;
+  function reflow() {
+    if (!activeModalEl || pending) return;
+    var ov = activeModalEl.closest ? activeModalEl.closest(".status-modal-overlay") : null;
+    if (ov && !ov.classList.contains("open")) { activeModalEl = null; return; }
+    pending = setTimeout(function () { pending = null; placeModalInViewport(activeModalEl); }, 80);
+  }
+  window.addEventListener("scroll", reflow, true);
+  window.addEventListener("resize", reflow, true);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("scroll", reflow);
+    window.visualViewport.addEventListener("resize", reflow);
+  }
+})();
 
 // ── ALERT MODAL ───────────────────────────────────────────────────────────
 // Styled replacement for native alert() — keeps branding, and positions in the
@@ -1142,6 +1167,7 @@ function showAlert(message, title) {
 }
 function closeAlertModal() {
   document.getElementById("alert-overlay").classList.remove("open");
+  activeModalEl = null;
   // restore standard alert layout in case the already-submitted interstitial customized it
   const okWrap = document.getElementById("alert-ok-wrap");
   if (okWrap) okWrap.style.display = "block";
@@ -1398,6 +1424,23 @@ function openForm() {
   document.getElementById("revision-fields").style.display = isRevision ? "block" : "none";
   if (isRevision && revisionEmail) document.getElementById("f-email").value = revisionEmail;
 
+  // On a revision, pre-fill Coach Name / Age / Gender / Team from the previous
+  // submission so the coach does not have to re-enter (and cannot get blocked by
+  // a required field that scrolled out of view). Only fills blanks, so anything
+  // the coach already typed this session is preserved.
+  if (isRevision && previousSelections && previousSelections[0]) {
+    const p0 = previousSelections[0];
+    const cf = document.getElementById("f-coach");
+    if (cf && !cf.value.trim() && p0.coachName) cf.value = p0.coachName;
+    const parsed = parseTeamDesignation(p0.team);
+    const af = document.getElementById("f-age");
+    if (af && !af.value && parsed.age) af.value = parsed.age;
+    const gf = document.getElementById("f-gender");
+    if (gf && !gf.value && parsed.gender) gf.value = parsed.gender;
+    const lf = document.getElementById("f-level");
+    if (lf && !lf.value && parsed.level) lf.value = parsed.level;
+  }
+
   // Changes Summary block + auto-prefill of the "What changed?" notes field
   const changes = renderRevisionChangesSummary();
   if (isRevision && changes) {
@@ -1430,6 +1473,7 @@ function openForm() {
 
 function closeFormModal() {
   document.getElementById("form-overlay").classList.remove("open");
+  activeModalEl = null;
 }
 
 
@@ -1630,6 +1674,7 @@ function startRevision() {
 
 function closeRevisionModal() {
   document.getElementById("revision-overlay").classList.remove("open");
+  activeModalEl = null;
   updateSlotsVisibility();
 }
 
@@ -1991,6 +2036,21 @@ function buildTeamDesignation(age, gender, level) {
   return "Valor " + age + " " + level + " " + g + years;
 }
 
+// Reverse of buildTeamDesignation — pulls Age / Gender / Team back out of a
+// stored designation string ("Valor U14 Gold B2012/13") so a revision can
+// pre-fill those fields instead of making the coach re-enter them.
+function parseTeamDesignation(team) {
+  const out = { age: "", gender: "", level: "" };
+  if (!team) return out;
+  if (/\bU18\/19\b/.test(team)) out.age = "U18/19";
+  else { const m = team.match(/\bU(9|10|11|12|13|14|15|16|17)\b/); if (m) out.age = m[0]; }
+  if (/\bGirls\b/.test(team) || /G\d{4}\/\d{2}/.test(team)) out.gender = "Girls";
+  else if (/\bBoys\b/.test(team) || /B\d{4}\/\d{2}/.test(team)) out.gender = "Boys";
+  const levels = ["ECNL-RL", "Pre-ECNL", "Gold", "White", "Black", "Silver", "Blue"];
+  for (let i = 0; i < levels.length; i++) { if (team.indexOf(levels[i]) !== -1) { out.level = levels[i]; break; } }
+  return out;
+}
+
 // ── SUBMIT ────────────────────────────────────────────────────────────────
 async function submitSelections() {
   const coach    = document.getElementById("f-coach").value.trim();
@@ -2001,7 +2061,23 @@ async function submitSelections() {
   const team     = buildTeamDesignation(age, gender, level);
   const revNotes = document.getElementById("f-rev-notes") ? document.getElementById("f-rev-notes").value.trim() : "";
 
-  if (!coach||!age||!gender||!level||!email) { showAlert("Please fill in all fields before submitting."); return; }
+  if (!coach || !age || !gender || !level || !email) {
+    const missing = [];
+    if (!coach)  missing.push(["Coach Name", "f-coach"]);
+    if (!age)    missing.push(["Age", "f-age"]);
+    if (!gender) missing.push(["Gender", "f-gender"]);
+    if (!level)  missing.push(["Team", "f-level"]);
+    if (!email)  missing.push(["Email Address", "f-email"]);
+    const el = document.getElementById(missing[0][1]);
+    if (el) {
+      try { el.scrollIntoView({ block: "center", behavior: "smooth" }); } catch (e) {}
+      try { el.focus({ preventScroll: true }); } catch (e2) { try { el.focus(); } catch (e3) {} }
+      el.style.outline = "2px solid #ef4444";
+      setTimeout(function () { el.style.outline = ""; }, 2600);
+    }
+    showAlert("Still needed: " + missing.map(function (m) { return m[0]; }).join(", ") + ".");
+    return;
+  }
   if (!email.includes("@")) { showAlert("Please enter a valid email address."); return; }
   if (selectionOrder.length===0) { showAlert("Please select at least one tournament."); return; }
 
@@ -2117,6 +2193,7 @@ function openStatusModal() {
 
 function closeStatusModal() {
   document.getElementById("status-overlay").classList.remove("open");
+  activeModalEl = null;
 }
 
 async function fetchStatus() {
