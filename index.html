@@ -402,7 +402,7 @@
   .status-modal-overlay {
     display: none; position: fixed; inset: 0; z-index: 400;
     background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);
-    align-items: center; justify-content: center;
+    align-items: flex-start; justify-content: center;
     overflow-y: auto; padding: 20px 0;
   }
   .status-modal-overlay.open { display: flex; }
@@ -410,7 +410,7 @@
     background: #fff; border-radius: 10px; width: 90%; max-width: 680px;
     max-height: calc(100vh - 80px); display: flex; flex-direction: column;
     box-shadow: 0 20px 60px rgba(0,0,0,0.25); overflow: hidden;
-    margin: auto;
+    margin: 0 auto;
   }
   .status-modal-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -1121,8 +1121,8 @@ function positionModalAtClick(modalEl) {
       const vH   = e.intersectionRect.height;               // height of the visible window
       // Cap height so a long list scrolls inside the modal instead of the page
       modalEl.style.maxHeight = Math.max(300, vH - 32) + "px";
-      // Pin to the top of the visible area (small offset for breathing room)
-      modalEl.style.marginTop = Math.max(12, vTop + 16) + "px";
+      // Pin to the very top of the visible area
+      modalEl.style.marginTop = Math.max(12, vTop + 12) + "px";
     });
     obs.observe(document.documentElement);
   } catch (err) { /* top-of-page fallback already set */ }
