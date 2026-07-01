@@ -1102,7 +1102,10 @@ document.addEventListener("pointerdown", function(e) { lastPointerY = e.pageY; }
 
 function positionModalAtClick(modalEl) {
   if (!modalEl) return;
-  if (window.innerWidth <= 768) { modalEl.style.marginTop = ""; modalEl.style.maxHeight = ""; return; }
+  // Runs on mobile too: inside the Wix iframe the page is sized to full content
+  // height on phones as well, so a flex-centered modal lands in the middle of the
+  // whole (very tall) page and ends up far below the visible screen. The observer
+  // below re-centers it in the slice the user can actually see.
 
   // Immediate placement near the click so the modal never appears far away,
   // then refine to true visible-viewport center as soon as the observer reports.
@@ -1755,17 +1758,23 @@ function confirmRevisionAndSubmit() {
 }
 
 
+// Browse the full list and add freely. Anything checked for removal stays a
+// removal; anything newly picked is a pure addition. No forced one-to-one swap.
+function confirmRevisionAndAdd() {
+  inReplacementMode = false;
+  replacingTournament = null;
+  confirmRevision(); // loads kept selections, closes modal, renders slots + full list to add from
+}
+
+// Retired: previously forced a one-to-one replacement when a tournament was
+// checked for removal. Kept for reference; no longer wired to any button.
 function confirmRevisionAndBrowse() {
-  // Capture which tournament is being replaced
   const dropped = previousSelections.find(s => droppingUids.has(s.tournament + "|" + s.date));
   if (dropped) {
     replacingTournament = dropped;
     inReplacementMode = true;
   }
-
-  confirmRevision(); // loads kept selections, closes modal, calls renderSlots
-
-  // Override slots bar immediately after to show ONLY red→green swap
+  confirmRevision();
   if (inReplacementMode && replacingTournament) {
     renderSlotsDuringReplacement();
   }
@@ -1849,7 +1858,7 @@ function confirmRevision() {
   const dropped = droppingUids.size;
   const bEl = document.getElementById("panel-breakdown");
   if (bEl) {
-    bEl.innerHTML = `<span style="color:var(--gold)">✏ Revision mode — ${kept} kept, ${dropped} removed. Browse the list to add replacements, then submit.</span>`;
+    bEl.innerHTML = `<span style="color:var(--gold)">✏ Revision mode — ${kept} kept, ${dropped} removed. Browse the list to add more tournaments, then click Complete Submission.</span>`;
     bEl.style.display = "block";
   }
 
@@ -2412,14 +2421,14 @@ renderSlots(); // show empty slots framework on load
     </div>
     <div id="rev-step-2" style="display:none;flex-direction:column;min-height:0;flex:1;">
       <div style="padding:14px 24px 10px;border-bottom:1px solid var(--border);flex-shrink:0;">
-        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;">Check the box next to any tournament you want to <strong>remove or replace</strong>. Leave unchecked ones as-is. Then click <strong>Continue</strong> to browse the full list and add replacements.</p>
+        <p style="font-size:12.5px;color:var(--muted);line-height:1.5;">Check the box next to any tournament you want to <strong>remove</strong>. Leave the ones you are keeping unchecked. Then choose <strong>Add More Tournaments</strong> to browse the full list and add to your selections, or <strong>Submit Changes</strong> if you are only removing.</p>
       </div>
       <div id="rev-prev-list" class="status-results" style="flex:1;overflow-y:auto;min-height:0;"></div>
       <div style="padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-wrap:wrap;flex-shrink:0;">
         <button onclick="backToRevEmail()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">&larr; Back</button>
         <button onclick="closeRevisionModal()" style="background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Cancel</button>
-        <button onclick="confirmRevisionAndSubmit()" style="background:transparent;border:2px solid #22c55e;color:#166534;border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Submit Without Adding More</button>
-        <button onclick="confirmRevisionAndBrowse()" class="status-lookup-btn" style="flex:1;">Choose Replacement Tournament &rarr;</button>
+        <button onclick="confirmRevisionAndSubmit()" style="background:transparent;border:2px solid #22c55e;color:#166534;border-radius:6px;padding:9px 16px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.06em;cursor:pointer;">Submit Changes</button>
+        <button onclick="confirmRevisionAndAdd()" class="status-lookup-btn" style="flex:1;">Add More Tournaments &rarr;</button>
       </div>
     </div>
   </div>
