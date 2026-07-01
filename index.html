@@ -400,10 +400,11 @@
 
   /* STATUS MODAL */
   .status-modal-overlay {
-    display: none; position: fixed; inset: 0; z-index: 400;
-    background: rgba(0,0,0,0.5); backdrop-filter: blur(3px);
+    display: none; position: absolute; top: 0; left: 0; right: 0; z-index: 400;
+    min-height: 100vh;
+    background: rgba(0,0,0,0.5);
     align-items: flex-start; justify-content: center;
-    overflow-y: auto; padding: 20px 0;
+    padding: 20px 0;
   }
   .status-modal-overlay.open { display: flex; }
   .status-modal {
@@ -598,9 +599,9 @@
     .slot-empty-label { font-size: 10px; }
     .slot-tag { font-size: 8px; padding: 1px 4px; }
 
-    /* MODALS — slide up from bottom on mobile */
-    .status-modal-overlay { align-items: flex-end; padding: 0; overflow-y: auto; }
-    .status-modal { width: 100%; max-width: 100%; border-radius: 16px 16px 0 0; max-height: 92vh; margin: 0; }
+    /* MODALS — top sheet on mobile (fixed positioning is unreliable in the Wix iframe) */
+    .status-modal-overlay { align-items: flex-start; padding: 0; }
+    .status-modal { width: 100%; max-width: 100%; border-radius: 0 0 16px 16px; max-height: 92vh; margin: 0; }
     .status-modal-header { padding: 14px 16px; }
     .status-modal-title { font-size: 16px; }
     .status-lookup { padding: 14px 16px; }
@@ -1091,33 +1092,46 @@ const INCLUDED_MAX = 5;
 const CLUB_EVENT_IDS = ["club-presidents-cup","club-state-cup"];
 
 // ── MODAL POSITIONING ─────────────────────────────────────────────────────
-// Inside the Wix embed, position:fixed does not reliably pin an overlay to the
-// user's screen — the overlay ends up near the bottom of the page flow. Rather
-// than try to measure the invisible viewport, we simply scroll the popup to the
-// top of the screen when it opens. scrollIntoView propagates across the iframe
-// boundary, so it works whether the iframe scrolls internally or the parent
-// scrolls it. This is the most reliable "put the box at the top" mechanism.
+// position:fixed does not work reliably inside the Wix iframe (a known iOS
+// behavior), so the dim overlay is absolutely positioned over the whole
+// document and the modal box is dropped in at the vertical spot the coach just
+// tapped — which is, by definition, on their screen. A scrollIntoView nudge then
+// pulls the box up toward the top of the view.
 let activeModalEl = null;
+let lastTriggerY = 0;
+document.addEventListener("click", function (e) {
+  if (e && typeof e.pageY === "number" && e.pageY > 0) lastTriggerY = e.pageY;
+}, true);
 
 function positionModalAtClick(modalEl) {
   if (!modalEl) return;
   activeModalEl = modalEl;
-  modalEl.style.marginTop = "12px";
-  modalEl.style.maxHeight = "";
   const overlay = modalEl.closest ? modalEl.closest(".status-modal-overlay") : null;
-  const target = overlay || modalEl;
-  const bringToTop = function () {
-    try { target.scrollIntoView({ block: "start", inline: "nearest" }); }
-    catch (e) { try { target.scrollIntoView(true); } catch (e2) {} }
-  };
-  // The caller flips the overlay to display:flex in this same tick; schedule the
-  // scroll for afterwards (and a couple more times) so the element has layout and
-  // any open animation has settled before we scroll to it.
-  if (window.requestAnimationFrame) {
-    requestAnimationFrame(function () { requestAnimationFrame(bringToTop); });
+  if (overlay) {
+    overlay.style.position = "absolute";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.right = "0";
+    try {
+      const docH = Math.max(
+        document.documentElement ? document.documentElement.scrollHeight : 0,
+        document.body ? document.body.scrollHeight : 0
+      );
+      if (docH) overlay.style.height = docH + "px";
+    } catch (e) {}
   }
+  // Drop the box in a bit above the tap so it reads as the top of the view,
+  // clamped so it can never sit above the top of the page.
+  modalEl.style.maxHeight = "";
+  modalEl.style.marginTop = Math.max(12, (lastTriggerY || 12) - 140) + "px";
+
+  // Then try to pull it to the very top of the visible area.
+  const bringToTop = function () {
+    try { modalEl.scrollIntoView({ block: "start", inline: "nearest" }); }
+    catch (e) { try { modalEl.scrollIntoView(true); } catch (e2) {} }
+  };
+  if (window.requestAnimationFrame) requestAnimationFrame(function () { requestAnimationFrame(bringToTop); });
   setTimeout(bringToTop, 90);
-  setTimeout(bringToTop, 250);
 }
 
 // ── ALERT MODAL ───────────────────────────────────────────────────────────
