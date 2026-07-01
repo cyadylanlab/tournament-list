@@ -1102,30 +1102,30 @@ document.addEventListener("pointerdown", function(e) { lastPointerY = e.pageY; }
 
 function positionModalAtClick(modalEl) {
   if (!modalEl) return;
-  // Runs on mobile too: inside the Wix iframe the page is sized to full content
-  // height on phones as well, so a flex-centered modal lands in the middle of the
-  // whole (very tall) page and ends up far below the visible screen. The observer
-  // below re-centers it in the slice the user can actually see.
+  // Inside the Wix iframe the page is sized to full content height (desktop AND
+  // mobile), so a normally-centered modal lands in the middle of the whole tall
+  // page — off-screen. We pin the modal to the TOP of the slice the user can
+  // actually see (measured with IntersectionObserver, which works across the
+  // cross-origin iframe boundary) so it is always in view with no scrolling.
 
-  // Immediate placement near the click so the modal never appears far away,
-  // then refine to true visible-viewport center as soon as the observer reports.
-  modalEl.style.marginTop = Math.max(20, lastPointerY - 160) + "px";
+  // Safe pre-measure default: top of the page. If the observer somehow doesn't
+  // report, the modal sits at the top rather than somewhere far down the page.
+  modalEl.style.marginTop = "12px";
 
   try {
     const obs = new IntersectionObserver(function(entries) {
       obs.disconnect();
       const e = entries[0];
       if (!e || !e.intersectionRect || e.intersectionRect.height <= 0) return;
-      const vTop = e.intersectionRect.top + window.scrollY; // top of the visible window, in page coords
+      const vTop = e.intersectionRect.top + window.scrollY; // page-Y of the top of the visible window
       const vH   = e.intersectionRect.height;               // height of the visible window
-      // Cap the modal to fit the visible window — content scrolls inside the modal instead of the page
-      const maxH = Math.max(300, vH - 48);
-      modalEl.style.maxHeight = maxH + "px";
-      const mH = Math.min(modalEl.offsetHeight || maxH, maxH);
-      modalEl.style.marginTop = Math.max(20, vTop + (vH - mH) / 2) + "px";
+      // Cap height so a long list scrolls inside the modal instead of the page
+      modalEl.style.maxHeight = Math.max(300, vH - 32) + "px";
+      // Pin to the top of the visible area (small offset for breathing room)
+      modalEl.style.marginTop = Math.max(12, vTop + 16) + "px";
     });
     obs.observe(document.documentElement);
-  } catch (err) { /* fallback position already set */ }
+  } catch (err) { /* top-of-page fallback already set */ }
 }
 
 // ── ALERT MODAL ───────────────────────────────────────────────────────────
