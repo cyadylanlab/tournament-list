@@ -1091,67 +1091,34 @@ const INCLUDED_MAX = 5;
 const CLUB_EVENT_IDS = ["club-presidents-cup","club-state-cup"];
 
 // ── MODAL POSITIONING ─────────────────────────────────────────────────────
-// The page lives in a Wix iframe sized to full content height, so position:fixed
-// covers the entire page — flex-centering a modal puts it in the middle of the
-// whole page, not the user's screen. We measure the slice of the page that is
-// actually visible in the parent browser window using IntersectionObserver
-// (which works across the cross-origin iframe boundary) and center the modal
-// inside that slice. Falls back to anchoring near the last click.
-let lastPointerY = 0;
-document.addEventListener("pointerdown", function(e) { lastPointerY = e.pageY; }, true);
-
-// The page lives in a Wix iframe. Depending on the device the iframe is either
-// sized to full content height (parent scrolls) or a fixed window (iframe
-// scrolls). Either way, a position:fixed overlay is pinned to that iframe
-// viewport, so we measure the slice the user can actually see with an
-// IntersectionObserver (works across the cross-origin boundary) and pin the
-// modal to the TOP of that slice. We do NOT add window.scrollY — the observer's
-// intersection rect is already in the overlay's coordinate space, and adding the
-// scroll offset double-counts it and pushes the modal off the bottom.
+// Inside the Wix embed, position:fixed does not reliably pin an overlay to the
+// user's screen — the overlay ends up near the bottom of the page flow. Rather
+// than try to measure the invisible viewport, we simply scroll the popup to the
+// top of the screen when it opens. scrollIntoView propagates across the iframe
+// boundary, so it works whether the iframe scrolls internally or the parent
+// scrolls it. This is the most reliable "put the box at the top" mechanism.
 let activeModalEl = null;
-
-function placeModalInViewport(modalEl) {
-  if (!modalEl) return;
-  try {
-    const obs = new IntersectionObserver(function(entries) {
-      obs.disconnect();
-      const e = entries[0];
-      if (!e || !e.intersectionRect || e.intersectionRect.height <= 0) return;
-      const vTop = e.intersectionRect.top;    // top of the visible slice, in the fixed overlay's coords
-      const vH   = e.intersectionRect.height; // height of the visible slice
-      // Cap height so a long form/list scrolls inside the modal, not the page
-      modalEl.style.maxHeight = Math.max(280, vH - 24) + "px";
-      // Pin to the very top of what the user can see
-      modalEl.style.marginTop = Math.max(12, vTop + 12) + "px";
-    });
-    obs.observe(document.documentElement);
-  } catch (err) { /* top-of-page fallback already set */ }
-}
 
 function positionModalAtClick(modalEl) {
   if (!modalEl) return;
   activeModalEl = modalEl;
-  modalEl.style.marginTop = "12px"; // safe default before measurement: top
-  placeModalInViewport(modalEl);
+  modalEl.style.marginTop = "12px";
+  modalEl.style.maxHeight = "";
+  const overlay = modalEl.closest ? modalEl.closest(".status-modal-overlay") : null;
+  const target = overlay || modalEl;
+  const bringToTop = function () {
+    try { target.scrollIntoView({ block: "start", inline: "nearest" }); }
+    catch (e) { try { target.scrollIntoView(true); } catch (e2) {} }
+  };
+  // The caller flips the overlay to display:flex in this same tick; schedule the
+  // scroll for afterwards (and a couple more times) so the element has layout and
+  // any open animation has settled before we scroll to it.
+  if (window.requestAnimationFrame) {
+    requestAnimationFrame(function () { requestAnimationFrame(bringToTop); });
+  }
+  setTimeout(bringToTop, 90);
+  setTimeout(bringToTop, 250);
 }
-
-// Keep whichever modal is open pinned to the visible area as the user scrolls or
-// the viewport resizes, so a single imperfect first measurement self-corrects.
-(function () {
-  let pending = null;
-  function reflow() {
-    if (!activeModalEl || pending) return;
-    var ov = activeModalEl.closest ? activeModalEl.closest(".status-modal-overlay") : null;
-    if (ov && !ov.classList.contains("open")) { activeModalEl = null; return; }
-    pending = setTimeout(function () { pending = null; placeModalInViewport(activeModalEl); }, 80);
-  }
-  window.addEventListener("scroll", reflow, true);
-  window.addEventListener("resize", reflow, true);
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener("scroll", reflow);
-    window.visualViewport.addEventListener("resize", reflow);
-  }
-})();
 
 // ── ALERT MODAL ───────────────────────────────────────────────────────────
 // Styled replacement for native alert() — keeps branding, and positions in the
