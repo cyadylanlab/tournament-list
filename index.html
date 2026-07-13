@@ -1130,7 +1130,7 @@ function positionModalAtClick(modalEl) {
     try { modalEl.scrollIntoView({ block: "start", inline: "nearest" }); }
     catch (e) { try { modalEl.scrollIntoView(true); } catch (e2) {} }
   };
-  if (window.requestAnimationFrame) requestAnimationFrame(function () { requestAnimationFrame(bringToTop); });
+  if (window.requestAnimationFrame) window.requestAnimationFrame(function () { window.requestAnimationFrame(bringToTop); });
   setTimeout(bringToTop, 90);
 }
 
@@ -1493,7 +1493,37 @@ async function loadDashboard() {
   }
 }
 
-function renderDashboard(mine, email) {
+// A single email can have more than one team (a coach running two age groups).
+// These helpers let the coach pick which team to view or revise so one team's
+// changes never bleed into another's.
+function distinctTeams(rows) {
+  const seen = [];
+  (rows || []).forEach(r => {
+    const t = (r.team || "").toString().trim();
+    if (t && seen.indexOf(t) === -1) seen.push(t);
+  });
+  return seen;
+}
+let dashAllRows = null, dashAllEmail = "", dashTeams = [];
+function pickDashTeam(i) { renderDashboard(dashAllRows, dashAllEmail, dashTeams[i]); }
+
+function teamPickerCard(teams, title, sub, onclickName) {
+  let btns = teams.map((t, i) =>
+    `<button onclick="${onclickName}(${i})" style="display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--border);border-radius:8px;padding:13px 16px;margin-bottom:8px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;letter-spacing:0.03em;color:#111;cursor:pointer;transition:all 0.15s;"
+      onmouseover="this.style.borderColor='var(--gold)';this.style.background='var(--gold-bg)'"
+      onmouseout="this.style.borderColor='var(--border)';this.style.background='#fff'">${t} &rarr;</button>`
+  ).join("");
+  return `<div class="dash-card">
+    <div class="dash-head"><div>
+      <div class="dash-title">${title}</div>
+      <div class="dash-sub">${sub}</div>
+    </div></div>
+    <div style="font-size:13px;color:var(--muted);line-height:1.6;margin:4px 0 14px;">You have more than one team on file under this email. Choose the team you want to work with.</div>
+    ${btns}
+  </div>`;
+}
+
+function renderDashboard(mine, email, pickTeam) {
   const dash = document.getElementById("coach-dashboard");
 
   if (mine.length === 0) {
@@ -1513,6 +1543,16 @@ function renderDashboard(mine, email) {
     updateSlotsVisibility();
     return;
   }
+
+  // Multiple teams under this email → let the coach choose which one first
+  const teams = distinctTeams(mine);
+  if (teams.length > 1 && !pickTeam) {
+    dashAllRows = mine; dashAllEmail = email; dashTeams = teams;
+    dash.innerHTML = teamPickerCard(teams, "Choose Your Team", email, "pickDashTeam");
+    updateSlotsVisibility();
+    return;
+  }
+  if (pickTeam) mine = mine.filter(r => (r.team || "").toString().trim() === pickTeam);
 
   // Make Changes path reuses the revision flow with this data preloaded
   statusRowsForRevision  = mine;
@@ -1665,6 +1705,25 @@ function backToRevEmail() {
   document.getElementById("rev-modal-title").textContent = "Revise / Modify My Selections";
 }
 
+// Multi-team revision: coach picked which team to revise from the lookup step
+let revAllRows = null, revEmailStored = "", revTeams = [];
+function chooseRevisionTeam(i) {
+  const t = revTeams[i];
+  const scoped = (revAllRows || []).filter(r => (r.team || "").toString().trim() === t);
+  previousSelections = scoped;
+  revisionEmail = revEmailStored;
+  droppingUids = new Set();
+  swapPairs = [];
+  inReplacementMode = false;
+  replacingTournament = null;
+  renderPreviousSelectionsInModal(scoped);
+  document.getElementById("rev-step-1").style.display = "none";
+  document.getElementById("rev-step-2").style.display = "flex";
+  document.getElementById("rev-modal-title").textContent = "Your Current Selections";
+  positionModalAtClick(document.getElementById("revision-overlay").querySelector(".status-modal"));
+  renderRevisionPreview();
+}
+
 async function lookUpPreviousSelections() {
   const email = document.getElementById("revision-email-input").value.trim().toLowerCase();
   if (!email || !email.includes("@")) { showAlert("Please enter a valid email address."); return; }
@@ -1684,6 +1743,20 @@ async function lookUpPreviousSelections() {
     if (mine.length === 0) {
       document.getElementById("rev-lookup-result").innerHTML =
         '<p style="color:var(--red);margin-top:8px;">No previous submissions found for this email. Check the address or contact club staff.</p>';
+      return;
+    }
+
+    // If this email has more than one team, ask which team to revise first, so
+    // the revision is scoped to that team only (never merges two teams' rows).
+    const revTeamsList = distinctTeams(mine);
+    if (revTeamsList.length > 1) {
+      revAllRows = mine; revEmailStored = email; revTeams = revTeamsList;
+      let btns = revTeamsList.map((t, i) =>
+        `<button onclick="chooseRevisionTeam(${i})" style="display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:#111;cursor:pointer;"
+          onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">${t} &rarr;</button>`
+      ).join("");
+      document.getElementById("rev-lookup-result").innerHTML =
+        '<p style="margin-top:10px;font-size:13px;color:var(--muted);line-height:1.5;">You have more than one team on file. Which team do you want to revise?</p>' + btns;
       return;
     }
 
@@ -2062,10 +2135,11 @@ async function submitSelections() {
   if (!email.includes("@")) { showAlert("Please enter a valid email address."); return; }
   if (selectionOrder.length===0) { showAlert("Please select at least one tournament."); return; }
 
-  // Forgetful-coach guard: if this email already has selections on file and
-  // they're NOT in the revision flow, stop and route them to Revise instead of
-  // silently replacing their previous set. (If the feed is unreachable or stale,
-  // the backend's auto-reconcile still prevents duplicate rows.)
+  // Forgetful-coach guard: if this email already has selections on file FOR THIS
+  // SAME TEAM and they're NOT in the revision flow, stop and route them to Revise
+  // instead of silently replacing that team's set. A different team passes through
+  // as its own new submission. (If the feed is unreachable or stale, the backend's
+  // auto-reconcile — also keyed on email+team — still prevents duplicate rows.)
   if (!isRevision) {
     const sendBtnCheck = document.getElementById("form-send-btn");
     const prevLabel = sendBtnCheck.textContent;
@@ -2073,7 +2147,10 @@ async function submitSelections() {
     let existing = [];
     try {
       const allRows = await fetchAllStatusRows();
-      existing = allRows.filter(r => (r.email || "").toLowerCase() === email.toLowerCase());
+      const teamKey = team.trim().toLowerCase();
+      existing = allRows.filter(r =>
+        (r.email || "").toLowerCase() === email.toLowerCase() &&
+        (r.team || "").toString().trim().toLowerCase() === teamKey);
     } catch(e) { /* proceed — backend reconciles as the safety net */ }
     sendBtnCheck.disabled = false; sendBtnCheck.textContent = prevLabel;
     const activeExisting = existing.filter(r => (r.status || "").toLowerCase() !== "cancelled");
@@ -2177,7 +2254,11 @@ function closeStatusModal() {
   activeModalEl = null;
 }
 
-async function fetchStatus() {
+// Multi-team status view: coach picked which team to display
+let statusTeams = [];
+function fetchStatusTeam(i) { fetchStatus(statusTeams[i]); }
+
+async function fetchStatus(forcedTeam) {
   const email = document.getElementById("status-email-input").value.trim().toLowerCase();
   if (!email || !email.includes("@")) { showAlert("Please enter a valid email address."); return; }
   if (STATUS_CSV_URLS.length === 0) {
@@ -2190,12 +2271,26 @@ async function fetchStatus() {
 
   try {
     const rows = await fetchAllStatusRows();
-    const mine = rows.filter(r => (r.email||"").toLowerCase() === email);
+    let mine = rows.filter(r => (r.email||"").toLowerCase() === email);
 
     if (mine.length === 0) {
       resultsEl.innerHTML = '<div class="status-empty">No submissions found for this email address. Make sure you are using the same email you submitted with, or contact club staff.</div>';
       return;
     }
+
+    // One email can have several teams — pick which to view (unless already chosen)
+    const stTeams = distinctTeams(mine);
+    if (!forcedTeam && stTeams.length > 1) {
+      statusTeams = stTeams;
+      let btns = stTeams.map((t, i) =>
+        `<button onclick="fetchStatusTeam(${i})" style="display:block;width:100%;text-align:left;background:#fff;border:2px solid var(--border);border-radius:8px;padding:12px 14px;margin-top:8px;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:#111;cursor:pointer;"
+          onmouseover="this.style.borderColor='var(--gold)'" onmouseout="this.style.borderColor='var(--border)'">${t} &rarr;</button>`
+      ).join("");
+      resultsEl.innerHTML = '<div style="font-size:13px;color:var(--muted);line-height:1.5;">You have more than one team on file. Which team do you want to view?</div>' + btns;
+      positionModalAtClick(document.getElementById("status-overlay").querySelector(".status-modal"));
+      return;
+    }
+    if (forcedTeam) mine = mine.filter(r => (r.team || "").toString().trim() === forcedTeam);
 
     // Stash for the "Make Changes" path — revision flow reuses this data
     // so the coach never types their email twice
